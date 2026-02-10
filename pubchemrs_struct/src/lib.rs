@@ -60,4 +60,10 @@
 //!
 //! - **`pyo3`** - Enables `#[pyclass]` derives for Python bindings via PyO3.
 
+#[macro_use]
+mod macros;
+pub mod error;
 pub mod properties;
+pub mod requests;
+pub mod response;
+pub mod structs;
