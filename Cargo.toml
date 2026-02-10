@@ -2,4 +2,5 @@
 resolver = "2"
 members = [
     "pubchemrs_struct",
+    "pubchemrs_tokio",
 ]
