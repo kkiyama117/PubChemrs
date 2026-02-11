@@ -113,6 +113,16 @@ pub struct CompoundProperties {
     #[serde(rename = "IsomericSMILES", default)]
     pub isomeric_smiles: Option<String>,
 
+    /// Isomeric SMILES (with stereochemistry). Returned by PubChem API as "SMILES"
+    /// when requesting `IsomericSMILES`.
+    #[serde(rename = "SMILES", default)]
+    pub smiles: Option<String>,
+
+    /// Connectivity SMILES (without stereochemistry). Returned by PubChem API as
+    /// "ConnectivitySMILES" when requesting `CanonicalSMILES`.
+    #[serde(rename = "ConnectivitySMILES", default)]
+    pub connectivity_smiles: Option<String>,
+
     #[serde(rename = "InChI", default)]
     pub inchi: Option<String>,
 

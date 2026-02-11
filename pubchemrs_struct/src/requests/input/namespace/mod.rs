@@ -96,7 +96,11 @@ impl Namespace {
                 CompoundNamespace::FastSearch(_) => true,
                 CompoundNamespace::Formula() => true,
                 CompoundNamespace::ListKey() => true,
-                // TODO: Check fastsearch or structure search with cid
+                // InChI, SMILES, and SDF contain special characters (slashes, equals)
+                // that break GET URL paths; PubChem requires POST for these.
+                CompoundNamespace::InChI() => true,
+                CompoundNamespace::Smiles() => true,
+                CompoundNamespace::Sdf() => true,
                 _ => false,
             },
             Namespace::Substance(sn) => matches!(
