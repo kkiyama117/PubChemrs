@@ -70,13 +70,29 @@ where
 ///
 /// | Category | Fields |
 /// |----------|--------|
-/// | **Identifiers** | `cid`, `inchi`, `inchikey`, `iupac_name`, `canonical_smiles`, `isomeric_smiles` |
+/// | **Identifiers** | `cid`, `inchi`, `inchikey`, `iupac_name` |
+/// | **SMILES** | `smiles` (current), `connectivity_smiles` (current), `canonical_smiles` (legacy), `isomeric_smiles` (legacy) |
 /// | **Physical** | `molecular_formula`, `molecular_weight`, `exact_mass`, `monoisotopic_mass`, `charge` |
 /// | **Descriptors** | `xlogp`, `tpsa`, `complexity` |
 /// | **Counts** | `h_bond_donor_count`, `h_bond_acceptor_count`, `rotatable_bond_count`, `heavy_atom_count`, `isotope_atom_count`, `covalent_unit_count` |
 /// | **Stereochemistry** | `atom_stereo_count`, `defined_atom_stereo_count`, `undefined_atom_stereo_count`, `bond_stereo_count`, `defined_bond_stereo_count`, `undefined_bond_stereo_count` |
 /// | **Fingerprint** | `fingerprint` (hex-encoded 881-bit PubChem fingerprint) |
 /// | **3D** | `volume_3d`, `conformer_rmsd_3d`, `effective_rotor_count_3d`, `conformer_count_3d`, steric quadrupoles, pharmacophore feature counts |
+///
+/// # SMILES Variants
+///
+/// PubChem has [two current SMILES variants](https://pubchem.ncbi.nlm.nih.gov/docs/glossary#section=SMILES):
+///
+/// | Current Name | JSON Key | Rust field | Content |
+/// |-------------|----------|------------|---------|
+/// | **SMILES** | `SMILES` | `smiles` | Complete SMILES with stereochemistry and isotopes |
+/// | **Connectivity SMILES** | `ConnectivitySMILES` | `connectivity_smiles` | Connectivity only, no stereochemistry or isotopes |
+///
+/// The former "Canonical SMILES" has been renamed to "Connectivity SMILES", and the former
+/// "Isomeric SMILES" is now simply called "SMILES". When requesting the legacy property tags
+/// (`CanonicalSMILES`, `IsomericSMILES`), the API may return the values under the new JSON
+/// keys (`ConnectivitySMILES`, `SMILES`) instead. All four fields are provided for
+/// compatibility with both old and new API responses.
 ///
 /// # Example
 ///
@@ -107,21 +123,30 @@ pub struct CompoundProperties {
     )]
     pub molecular_weight: Option<f64>,
 
-    #[serde(rename = "CanonicalSMILES", default)]
-    pub canonical_smiles: Option<String>,
-
-    #[serde(rename = "IsomericSMILES", default)]
-    pub isomeric_smiles: Option<String>,
-
-    /// Isomeric SMILES (with stereochemistry). Returned by PubChem API as "SMILES"
-    /// when requesting `IsomericSMILES`.
+    /// Complete SMILES including stereochemistry and isotope information.
+    ///
+    /// This is the current PubChem SMILES property (formerly "Isomeric SMILES").
+    /// JSON key: `SMILES`. Request tag: `IsomericSMILES`.
     #[serde(rename = "SMILES", default)]
     pub smiles: Option<String>,
 
-    /// Connectivity SMILES (without stereochemistry). Returned by PubChem API as
-    /// "ConnectivitySMILES" when requesting `CanonicalSMILES`.
+    /// Connectivity-only SMILES without stereochemistry or isotope information.
+    /// Analogous to the connectivity layer of the InChI Key.
+    ///
+    /// This is the current PubChem property (formerly "Canonical SMILES").
+    /// JSON key: `ConnectivitySMILES`. Request tag: `CanonicalSMILES`.
     #[serde(rename = "ConnectivitySMILES", default)]
     pub connectivity_smiles: Option<String>,
+
+    /// Legacy field: may appear in older API responses or specific endpoints.
+    /// Prefer [`smiles`](Self::smiles) and [`connectivity_smiles`](Self::connectivity_smiles).
+    #[serde(rename = "CanonicalSMILES", default)]
+    pub canonical_smiles: Option<String>,
+
+    /// Legacy field: may appear in older API responses or specific endpoints.
+    /// Prefer [`smiles`](Self::smiles) and [`connectivity_smiles`](Self::connectivity_smiles).
+    #[serde(rename = "IsomericSMILES", default)]
+    pub isomeric_smiles: Option<String>,
 
     #[serde(rename = "InChI", default)]
     pub inchi: Option<String>,
@@ -286,14 +311,6 @@ mod tests {
             Some("C9H8O4")
         );
         assert_eq!(
-            props.canonical_smiles.as_deref(),
-            Some("CC(=O)OC1=CC=CC=C1C(=O)O")
-        );
-        assert_eq!(
-            props.isomeric_smiles.as_deref(),
-            Some("CC(=O)OC1=CC=CC=C1C(=O)O")
-        );
-        assert_eq!(
             props.inchi.as_deref(),
             Some("InChI=1S/C9H8O4/c1-6(10)13-8-5-3-2-4-7(8)9(11)12/h2-5H,1H3,(H,11,12)")
         );
@@ -305,6 +322,91 @@ mod tests {
             props.iupac_name.as_deref(),
             Some("2-acetyloxybenzoic acid")
         );
+    }
+
+    #[test]
+    fn test_deserialize_smiles_all_variants() {
+        // Aspirin fixture contains all 4 SMILES variants
+        let response: PropertyTableResponse =
+            serde_json::from_str(ASPIRIN_FIXTURE).unwrap();
+        let props = &response.property_table.properties[0];
+
+        // Current fields
+        assert_eq!(
+            props.smiles.as_deref(),
+            Some("CC(=O)OC1=CC=CC=C1C(=O)O")
+        );
+        assert_eq!(
+            props.connectivity_smiles.as_deref(),
+            Some("CC(=O)OC1=CC=CC=C1C(=O)O")
+        );
+        // Legacy fields
+        assert_eq!(
+            props.canonical_smiles.as_deref(),
+            Some("CC(=O)OC1=CC=CC=C1C(=O)O")
+        );
+        assert_eq!(
+            props.isomeric_smiles.as_deref(),
+            Some("CC(=O)OC1=CC=CC=C1C(=O)O")
+        );
+    }
+
+    #[test]
+    fn test_deserialize_smiles_current_fields_only() {
+        // Modern API response with only current SMILES field names
+        let json = r#"{
+            "PropertyTable": {
+                "Properties": [{
+                    "CID": 2244,
+                    "ConnectivitySMILES": "CC(=O)OC1=CC=CC=C1C(=O)O",
+                    "SMILES": "CC(=O)OC1=CC=CC=C1C(=O)O"
+                }]
+            }
+        }"#;
+        let response: PropertyTableResponse =
+            serde_json::from_str(json).expect("should handle current SMILES fields");
+        let props = &response.property_table.properties[0];
+
+        assert_eq!(
+            props.connectivity_smiles.as_deref(),
+            Some("CC(=O)OC1=CC=CC=C1C(=O)O")
+        );
+        assert_eq!(
+            props.smiles.as_deref(),
+            Some("CC(=O)OC1=CC=CC=C1C(=O)O")
+        );
+        // Legacy fields should be None
+        assert!(props.canonical_smiles.is_none());
+        assert!(props.isomeric_smiles.is_none());
+    }
+
+    #[test]
+    fn test_deserialize_smiles_legacy_fields_only() {
+        // Older API response with only legacy SMILES field names
+        let json = r#"{
+            "PropertyTable": {
+                "Properties": [{
+                    "CID": 2244,
+                    "CanonicalSMILES": "CC(=O)OC1=CC=CC=C1C(=O)O",
+                    "IsomericSMILES": "CC(=O)OC1=CC=CC=C1C(=O)O"
+                }]
+            }
+        }"#;
+        let response: PropertyTableResponse =
+            serde_json::from_str(json).expect("should handle legacy SMILES fields");
+        let props = &response.property_table.properties[0];
+
+        assert_eq!(
+            props.canonical_smiles.as_deref(),
+            Some("CC(=O)OC1=CC=CC=C1C(=O)O")
+        );
+        assert_eq!(
+            props.isomeric_smiles.as_deref(),
+            Some("CC(=O)OC1=CC=CC=C1C(=O)O")
+        );
+        // Current fields should be None
+        assert!(props.smiles.is_none());
+        assert!(props.connectivity_smiles.is_none());
     }
 
     #[test]
