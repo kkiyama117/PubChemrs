@@ -8,7 +8,7 @@ Async Rust client for the [PubChem PUG REST API](https://pubchem.ncbi.nlm.nih.go
 - **Async HTTP client** — Built on `reqwest` + `tokio` with connection pooling, automatic retry on 429/503/504, and linear backoff.
 - **Automatic GET/POST selection** — Searches by InChI, SMILES, SDF, or Formula automatically use POST as required by the PubChem API.
 - **Comprehensive API coverage** — Compound, Substance, Assay, Gene, Protein, Pathway, Taxonomy, and Cell domains. Structure search (substructure/superstructure/similarity/identity) and fast search (2D/3D similarity).
-- **Convenience free functions** — `get_compounds()`, `get_properties()`, `get_synonyms()`, `get_all_sources()` available at module level using a shared global client.
+- **Ergonomic convenience API** — `CompoundQuery` and `OtherInputsQuery` builders for common queries with one-liner property accessors.
 - **Optional Python bindings** — Enable `pyo3` feature flag for `#[pyclass]` derives on all major types. CI builds maturin wheels for Linux and Windows.
 
 ## Quick Start
@@ -17,51 +17,61 @@ Async Rust client for the [PubChem PUG REST API](https://pubchem.ncbi.nlm.nih.go
 
 ```toml
 [dependencies]
-pubchemrs_tokio = { git = "https://github.com/your-org/pubchemrs2" }
+pubchemrs_tokio = { git = "https://github.com/kkiyama117/PubChemrs" }
 ```
 
 For type definitions only (no HTTP dependencies):
 
 ```toml
 [dependencies]
-pubchemrs_struct = { git = "https://github.com/your-org/pubchemrs2" }
+pubchemrs_struct = { git = "https://github.com/kkiyama117/PubChemrs" }
 ```
 
-### Basic Usage
+### Convenience API
+
+```rust,no_run
+use pubchemrs_tokio::CompoundQuery;
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // Single property
+    let formula = CompoundQuery::with_name("aspirin")
+        .molecular_formula()
+        .await?;
+    println!("Formula: {formula:?}"); // Some("C9H8O4")
+
+    // Multiple properties in one request
+    let props = CompoundQuery::with_cid(2244)
+        .properties(&["MolecularWeight", "InChIKey"])
+        .await?;
+    println!("MW: {:?}", props[0].molecular_weight);  // Some(180.16)
+    println!("InChIKey: {:?}", props[0].inchikey);     // Some("BSYNRYMUTXBXSQ-...")
+
+    // Synonyms
+    let synonyms = CompoundQuery::with_name("caffeine")
+        .synonyms()
+        .await?;
+    println!("Found {} synonyms", synonyms.len());
+
+    Ok(())
+}
+```
+
+### Low-Level Client
+
+For full control over the request, use `PubChemClient` directly:
 
 ```rust,no_run
 use pubchemrs_tokio::PubChemClient;
 use pubchemrs_struct::requests::input::CompoundNamespace;
 use std::collections::HashMap;
 
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let client = PubChemClient::default();
-    let props = client.get_properties(
-        "aspirin",
-        CompoundNamespace::Name(),
-        &["MolecularWeight".into(), "InChIKey".into()],
-        HashMap::new(),
-    ).await?;
-
-    println!("MW: {:?}", props[0].molecular_weight);      // Some(180.16)
-    println!("InChIKey: {:?}", props[0].inchikey);         // Some("BSYNRYMUTXBXSQ-...")
-    Ok(())
-}
-```
-
-### Using Free Functions
-
-```rust,no_run
-use pubchemrs_tokio::get_properties;
-use pubchemrs_struct::requests::input::CompoundNamespace;
-use std::collections::HashMap;
-
 # async fn example() -> Result<(), Box<dyn std::error::Error>> {
-let props = get_properties(
-    2244u32,
-    CompoundNamespace::Cid(),
-    &["MolecularFormula".into()],
+let client = PubChemClient::default();
+let props = client.get_properties(
+    "aspirin",
+    CompoundNamespace::Name(),
+    &["MolecularWeight".into(), "InChIKey".into()],
     HashMap::new(),
 ).await?;
 # Ok(())
@@ -70,107 +80,88 @@ let props = get_properties(
 
 ## API Examples
 
-### Get Full Compound Records
+### CompoundQuery
 
 ```rust,no_run
-use pubchemrs_tokio::get_compounds;
-use pubchemrs_struct::requests::input::CompoundNamespace;
-use std::collections::HashMap;
+use pubchemrs_tokio::CompoundQuery;
 
 # async fn example() -> Result<(), Box<dyn std::error::Error>> {
-// By CID
-let compounds = get_compounds(2244u32, CompoundNamespace::Cid(), HashMap::new()).await?;
+// Search by name
+let formula = CompoundQuery::with_name("aspirin")
+    .molecular_formula().await?;
 
-// By name
-let compounds = get_compounds("aspirin", CompoundNamespace::Name(), HashMap::new()).await?;
+// Search by CID
+let weight = CompoundQuery::with_cid(2244)
+    .molecular_weight().await?;
 
-// By SMILES (automatically uses POST)
-let compounds = get_compounds(
-    "CC(=O)OC1=CC=CC=C1C(=O)O",
-    CompoundNamespace::Smiles(),
-    HashMap::new(),
-).await?;
+// Search by SMILES (automatically uses POST)
+let props = CompoundQuery::with_smiles("CC(=O)OC1=CC=CC=C1C(=O)O")
+    .properties(&["MolecularFormula", "InChIKey"]).await?;
+
+// Search by InChIKey
+let name = CompoundQuery::with_inchikey("BSYNRYMUTXBXSQ-UHFFFAOYSA-N")
+    .iupac_name().await?;
+
+// Batch query — multiple CIDs in one request
+let batch = CompoundQuery::with_cids(&[2244, 962, 5793])
+    .properties(&["MolecularFormula", "MolecularWeight"]).await?;
+
+// Full compound record
+let compound = CompoundQuery::with_cid(2244).record().await?;
+
+// Synonyms
+let synonyms = CompoundQuery::with_name("caffeine").synonyms().await?;
+
+// Discover CID from name
+let cid = CompoundQuery::with_name("aspirin").cid().await?;
 # Ok(())
 # }
 ```
 
-### Get Compound Properties
+Available single-property accessors: `molecular_formula`, `molecular_weight`, `iupac_name`, `inchi`, `inchikey`, `smiles`, `canonical_smiles`, `xlogp`, `exact_mass`, `tpsa`, `charge`.
+
+### OtherInputsQuery
 
 ```rust,no_run
-use pubchemrs_tokio::get_properties;
-use pubchemrs_struct::requests::input::CompoundNamespace;
-use std::collections::HashMap;
+use pubchemrs_tokio::OtherInputsQuery;
 
 # async fn example() -> Result<(), Box<dyn std::error::Error>> {
-let props = get_properties(
-    "water",
-    CompoundNamespace::Name(),
-    &[
-        "MolecularWeight".into(),
-        "MolecularFormula".into(),
-        "InChIKey".into(),
-        "HBondDonorCount".into(),
-    ],
-    HashMap::new(),
-).await?;
+// List all substance depositors
+let sources = OtherInputsQuery::substance_sources().fetch().await?;
 
-let water = &props[0];
-println!("Formula: {:?}", water.molecular_formula);   // Some("H2O")
-println!("MW: {:?}", water.molecular_weight);          // Some(18.015)
-println!("HBD: {:?}", water.h_bond_donor_count);       // Some(1)
+// List all assay depositors
+let sources = OtherInputsQuery::assay_sources().fetch().await?;
+
+// Periodic table data (raw JSON)
+let table = OtherInputsQuery::periodic_table().fetch_json().await?;
 # Ok(())
 # }
 ```
 
-### Get Synonyms
+### Custom Client
+
+Both query builders accept a custom client via `using_client()`:
 
 ```rust,no_run
-use pubchemrs_tokio::get_synonyms;
-use pubchemrs_struct::requests::input::*;
-use std::collections::HashMap;
+use pubchemrs_tokio::{CompoundQuery, PubChemClient, ClientConfig};
+use std::time::Duration;
 
 # async fn example() -> Result<(), Box<dyn std::error::Error>> {
-let synonyms = get_synonyms(
-    "caffeine",
-    Namespace::Compound(CompoundNamespace::Name()),
-    HashMap::new(),
-).await?;
+let client = PubChemClient::new(ClientConfig {
+    timeout: Duration::from_secs(60),
+    max_retries: 5,
+    retry_delay: Duration::from_secs(1),
+})?;
 
-for name in &synonyms[0].synonym {
-    println!("{name}");
-}
-# Ok(())
-# }
-```
-
-### Get All Sources
-
-```rust,no_run
-use pubchemrs_tokio::get_all_sources;
-use pubchemrs_struct::requests::input::Domain;
-
-# async fn example() -> Result<(), Box<dyn std::error::Error>> {
-// Substance sources (default)
-let sources = get_all_sources(None).await?;
-
-// Assay sources
-let sources = get_all_sources(Some(Domain::Assay())).await?;
+let formula = CompoundQuery::with_name("aspirin")
+    .using_client(&client)
+    .molecular_formula()
+    .await?;
 # Ok(())
 # }
 ```
 
 ## Client Configuration
-
-```rust,no_run
-use pubchemrs_tokio::{PubChemClient, ClientConfig};
-use std::time::Duration;
-
-let client = PubChemClient::new(ClientConfig {
-    timeout: Duration::from_secs(60),
-    max_retries: 5,
-    retry_delay: Duration::from_secs(1),
-}).unwrap();
-```
 
 | Option | Default | Description |
 |--------|---------|-------------|
@@ -279,6 +270,15 @@ Requires Python 3.9+ (`abi3-py39`). CI builds wheels for Linux (x86_64, x86, aar
 ## Minimum Supported Rust Version
 
 Both crates use Rust Edition 2024, requiring **Rust 1.85.0** or later.
+
+## Alternatives
+
+### [pubchem](https://crates.io/crates/pubchem)
+
+Synchronous PubChem client using `ureq` and XML parsing. Simple API like `Compound::with_name("aspirin").title()`.
+
+- **Inspired by:** The ergonomic one-liner API design. `CompoundQuery` was modeled after this crate's `Compound` builder pattern.
+- **What pubchemrs2 adds:** Async/await support, automatic retry with backoff, POST method selection for SMILES/InChI/SDF queries, coverage beyond the Compound domain (Substance, Assay, Gene, Protein, etc.), batch queries, and optional Python bindings.
 
 ## References
 
