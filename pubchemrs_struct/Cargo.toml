@@ -1,7 +1,12 @@
 [package]
-name    = "pubchemrs_struct"
-version = "0.1.0"
-edition = "2024"
+name        = "pubchemrs_struct"
+version     = "0.1.0"
+edition     = "2024"
+license     = "MIT"
+description = "Strongly-typed data structures for the PubChem PUG REST API"
+repository  = "https://github.com/kkiyama117/PubChemrs"
+keywords    = ["pubchem", "chemistry", "api"]
+categories  = ["science", "api-bindings"]
 
 [dependencies]
 itertools   = "0.14"
