@@ -387,9 +387,7 @@ impl FromStr for AssayOperationSpecification {
     }
 }
 
-#[derive(
-    Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize,
-)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass)]
 pub enum AssayOperationTargetType {
@@ -407,9 +405,7 @@ impl_enum_str!(AssayOperationTargetType {
     GeneSymbol => "genesymbol",
 });
 
-#[derive(
-    Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize,
-)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass)]
 pub enum GeneOperationSpecification {
@@ -427,9 +423,7 @@ impl_enum_str!(GeneOperationSpecification {
     Pwaccs => "pwaccs",
 });
 
-#[derive(
-    Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize,
-)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass)]
 pub enum ProteinOperationSpecification {
@@ -447,9 +441,7 @@ impl_enum_str!(ProteinOperationSpecification {
     Pwaccs => "pwaccs",
 });
 
-#[derive(
-    Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize,
-)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass)]
 pub enum PathWayOperationSpecification {
@@ -467,9 +459,7 @@ impl_enum_str!(PathWayOperationSpecification {
     Pwaccs => "pwaccs",
 });
 
-#[derive(
-    Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize,
-)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass)]
 pub enum TaxonomyOperationSpecification {
@@ -483,9 +473,7 @@ impl_enum_str!(TaxonomyOperationSpecification {
     Aids => "aids",
 });
 
-#[derive(
-    Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize,
-)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass)]
 pub enum CellOperationSpecification {

@@ -5,7 +5,9 @@ use pubchemrs_struct::requests::input::*;
 use pubchemrs_struct::requests::operation::*;
 use pubchemrs_struct::requests::output::OutputFormat;
 use pubchemrs_struct::requests::url_builder::UrlBuilder;
-use pubchemrs_struct::response::{Compound, PubChemInformation, PubChemInformationList, PubChemResponse};
+use pubchemrs_struct::response::{
+    Compound, PubChemInformation, PubChemInformationList, PubChemResponse,
+};
 
 use crate::client::PubChemClient;
 use crate::error::Result;
@@ -104,9 +106,7 @@ impl PubChemClient {
 
         let response = self.get_and_parse(&url_builder).await?;
         match response {
-            PubChemResponse::InformationList(info_list) => {
-                Ok(info_list.get_information_list())
-            }
+            PubChemResponse::InformationList(info_list) => Ok(info_list.get_information_list()),
             _other => Err(crate::error::Error::PubChem(
                 pubchemrs_struct::error::PubChemError::ParseResponseError(
                     "Expected InformationList response, got unexpected variant".into(),
@@ -118,10 +118,7 @@ impl PubChemClient {
     /// Fetch all source names for a given domain.
     ///
     /// If `domain` is `None`, defaults to substance sources.
-    pub async fn get_all_sources(
-        &self,
-        domain: Option<Domain>,
-    ) -> Result<Vec<String>> {
+    pub async fn get_all_sources(&self, domain: Option<Domain>) -> Result<Vec<String>> {
         let source_domain = match domain {
             Some(Domain::Assay()) => Domain::Others(DomainOtherInputs::SourcesAssays),
             _ => Domain::Others(DomainOtherInputs::SourcesSubstances),

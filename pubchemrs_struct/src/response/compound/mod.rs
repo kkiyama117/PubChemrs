@@ -54,11 +54,7 @@ impl Compound {
     }
 
     /// Search props array by label and name, return the first matching value.
-    pub fn parse_prop_by_label_and_name(
-        &self,
-        label: &str,
-        name: &str,
-    ) -> Option<&PropsValue> {
+    pub fn parse_prop_by_label_and_name(&self, label: &str, name: &str) -> Option<&PropsValue> {
         self.props
             .iter()
             .find(|p| p.urn.label == label && p.urn.name.as_deref() == Some(name))
@@ -213,26 +209,27 @@ impl Compound {
                     let bonds: Result<Vec<crate::structs::Bond>, PubChemError> =
                         izip!(aid1s.iter(), aid2s.iter(), orders.iter())
                             .map(|(aid1, aid2, order)| {
-                                let order =
-                                    crate::structs::BondType::try_from(*order as u8)
-                                        .map_err(|_| PubChemError::ParseResponseError(
+                                let order = crate::structs::BondType::try_from(*order as u8)
+                                    .map_err(|_| {
+                                        PubChemError::ParseResponseError(
                                             format!("Invalid bond order: {}", order).into(),
-                                        ))?;
+                                        )
+                                    })?;
                                 Ok(crate::structs::Bond::new(*aid1, *aid2, Some(order), None))
                             })
                             .collect();
                     let mut bonds = bonds?;
                     // Add styles if coords exist and styles in coords.
-                    if !self.coords.is_empty() {
-                        if let Some(inner_style) = styles {
-                            let style_aid1s = &inner_style.aid1;
-                            let style_aid2s = &inner_style.aid2;
-                            let style_vals = &inner_style.annotation;
-                            for bond in &mut bonds {
-                                for (aid1, aid2, style) in izip!(style_aid1s, style_aid2s, style_vals) {
-                                    if bond.is_same_bond_with_aid(*aid1, *aid2) {
-                                        bond.set_style(Some(*style));
-                                    }
+                    if !self.coords.is_empty()
+                        && let Some(inner_style) = styles
+                    {
+                        let style_aid1s = &inner_style.aid1;
+                        let style_aid2s = &inner_style.aid2;
+                        let style_vals = &inner_style.annotation;
+                        for bond in &mut bonds {
+                            for (aid1, aid2, style) in izip!(style_aid1s, style_aid2s, style_vals) {
+                                if bond.is_same_bond_with_aid(*aid1, *aid2) {
+                                    bond.set_style(Some(*style));
                                 }
                             }
                         }

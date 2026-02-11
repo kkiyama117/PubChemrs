@@ -137,9 +137,7 @@ impl FromStr for StructureSearch {
 }
 
 /// Advanced search type
-#[derive(
-    Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize,
-)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass)]
 pub enum CompoundDomainStructureSearchKey {
@@ -157,9 +155,7 @@ impl_enum_str!(CompoundDomainStructureSearchKey {
     Identity => "identity",
 });
 
-#[derive(
-    Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize,
-)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass)]
 pub enum CompoundDomainStructureSearchValue {
@@ -221,9 +217,7 @@ impl FromStr for FastSearch {
     }
 }
 
-#[derive(
-    Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize,
-)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass)]
 pub enum CompoundDomainFastSearchKey {
@@ -245,9 +239,7 @@ impl_enum_str!(CompoundDomainFastSearchKey {
     FastFormula => "fastformula",
 });
 
-#[derive(
-    Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize,
-)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass)]
 pub enum CompoundDomainFastSearchValue {

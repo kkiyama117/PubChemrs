@@ -64,7 +64,10 @@ mod tests {
     #[test]
     fn test_pubchem_error_from_parse_enum() {
         let err: PubChemError = ParseEnumError::VariantNotFound.into();
-        assert!(matches!(err, PubChemError::ParseEnum(ParseEnumError::VariantNotFound)));
+        assert!(matches!(
+            err,
+            PubChemError::ParseEnum(ParseEnumError::VariantNotFound)
+        ));
     }
 
     #[test]

@@ -83,9 +83,7 @@ impl FromStr for AssayNamespace {
     }
 }
 
-#[derive(
-    Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize,
-)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass)]
 pub enum AssayType {
@@ -121,9 +119,7 @@ impl_enum_str!(AssayType {
     ActiveConcentrationSpecified => "activeconcentrationspecified",
 });
 
-#[derive(
-    Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize,
-)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass)]
 pub enum AssayTarget {

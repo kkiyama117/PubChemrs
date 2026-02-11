@@ -21,7 +21,10 @@ async fn test_get_properties_water() {
     let water = &props[0];
     assert!(water.molecular_weight.is_some());
     assert!(water.inchikey.is_some());
-    assert_eq!(water.inchikey.as_deref(), Some("XLYOFNOQVPJJNP-UHFFFAOYSA-N"));
+    assert_eq!(
+        water.inchikey.as_deref(),
+        Some("XLYOFNOQVPJJNP-UHFFFAOYSA-N")
+    );
 }
 
 #[tokio::test]
@@ -57,7 +60,11 @@ async fn test_get_synonyms_caffeine() {
     assert!(info.cid.is_some());
     assert!(!info.synonym.is_empty());
     // "caffeine" should appear in synonyms (case-insensitive)
-    assert!(info.synonym.iter().any(|s| s.to_lowercase().contains("caffeine")));
+    assert!(
+        info.synonym
+            .iter()
+            .any(|s| s.to_lowercase().contains("caffeine"))
+    );
 }
 
 #[tokio::test]
