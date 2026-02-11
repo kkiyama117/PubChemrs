@@ -6,7 +6,43 @@
 //! retry, GET/POST selection, and connection pooling. It uses the type definitions from
 //! [`pubchemrs_struct`].
 //!
-//! ## Quick Start
+//! ## Quick Start — Convenience API
+//!
+//! For common queries, use [`CompoundQuery`] or [`OtherInputsQuery`]:
+//!
+//! ```rust,no_run
+//! use pubchemrs_tokio::{CompoundQuery, OtherInputsQuery};
+//!
+//! # async fn example() -> pubchemrs_tokio::error::Result<()> {
+//! // Single property
+//! let formula = CompoundQuery::with_name("aspirin")
+//!     .molecular_formula()
+//!     .await?;
+//!
+//! // Multiple properties in one request
+//! let props = CompoundQuery::with_cid(2244)
+//!     .properties(&["MolecularFormula", "MolecularWeight", "InChIKey"])
+//!     .await?;
+//!
+//! // Batch query
+//! let batch = CompoundQuery::with_cids(&[2244, 5793])
+//!     .properties(&["MolecularFormula"])
+//!     .await?;
+//!
+//! // Synonyms
+//! let synonyms = CompoundQuery::with_name("caffeine")
+//!     .synonyms()
+//!     .await?;
+//!
+//! // List all substance sources
+//! let sources = OtherInputsQuery::substance_sources().fetch().await?;
+//! # Ok(())
+//! # }
+//! ```
+//!
+//! ## Low-Level Client
+//!
+//! For full control, use [`PubChemClient`] directly:
 //!
 //! ```rust,no_run
 //! use pubchemrs_tokio::PubChemClient;
@@ -21,64 +57,17 @@
 //!     &["MolecularWeight".into(), "InChIKey".into()],
 //!     HashMap::new(),
 //! ).await?;
-//! println!("{:?}", props[0].molecular_weight);
 //! # Ok(())
 //! # }
 //! ```
 
 pub mod api;
 pub mod client;
+pub mod convenience;
 pub mod error;
 
 pub use client::{ClientConfig, PubChemClient};
+pub use convenience::{CompoundQuery, OtherInputsQuery};
 
 // Re-export key types from pubchemrs_struct for convenience
 pub use pubchemrs_struct;
-
-use std::collections::HashMap;
-
-use pubchemrs_struct::properties::CompoundProperties;
-use pubchemrs_struct::requests::input::*;
-use pubchemrs_struct::requests::operation::CompoundPropertyTag;
-use pubchemrs_struct::response::{Compound, PubChemInformation};
-
-/// Fetch full compound records using a default client.
-pub async fn get_compounds(
-    identifiers: impl Into<Identifiers>,
-    namespace: CompoundNamespace,
-    kwargs: HashMap<String, String>,
-) -> error::Result<Vec<Compound>> {
-    PubChemClient::global_default()
-        .get_compounds(identifiers, namespace, kwargs)
-        .await
-}
-
-/// Fetch compound properties using a default client.
-pub async fn get_properties(
-    identifiers: impl Into<Identifiers>,
-    namespace: CompoundNamespace,
-    properties: &[CompoundPropertyTag],
-    kwargs: HashMap<String, String>,
-) -> error::Result<Vec<CompoundProperties>> {
-    PubChemClient::global_default()
-        .get_properties(identifiers, namespace, properties, kwargs)
-        .await
-}
-
-/// Fetch synonyms using a default client.
-pub async fn get_synonyms(
-    identifiers: impl Into<Identifiers>,
-    namespace: Namespace,
-    kwargs: HashMap<String, String>,
-) -> error::Result<Vec<PubChemInformation>> {
-    PubChemClient::global_default()
-        .get_synonyms(identifiers, namespace, kwargs)
-        .await
-}
-
-/// Fetch all source names using a default client.
-pub async fn get_all_sources(domain: Option<Domain>) -> error::Result<Vec<String>> {
-    PubChemClient::global_default()
-        .get_all_sources(domain)
-        .await
-}
