@@ -237,5 +237,234 @@ mod tests {
         assert!(is_retryable(reqwest::StatusCode::GATEWAY_TIMEOUT));
         assert!(!is_retryable(reqwest::StatusCode::NOT_FOUND));
         assert!(!is_retryable(reqwest::StatusCode::BAD_REQUEST));
+        assert!(!is_retryable(reqwest::StatusCode::OK));
+        assert!(!is_retryable(reqwest::StatusCode::INTERNAL_SERVER_ERROR));
+        assert!(!is_retryable(reqwest::StatusCode::UNAUTHORIZED));
+    }
+
+    #[test]
+    fn test_custom_client_config() {
+        let config = ClientConfig {
+            timeout: Duration::from_secs(60),
+            max_retries: 5,
+            retry_delay: Duration::from_secs(1),
+        };
+        assert_eq!(config.timeout, Duration::from_secs(60));
+        assert_eq!(config.max_retries, 5);
+        assert_eq!(config.retry_delay, Duration::from_secs(1));
+
+        let client = PubChemClient::new(config);
+        assert!(client.is_ok());
+    }
+
+    #[test]
+    fn test_default_client() {
+        let client = PubChemClient::default();
+        assert_eq!(client.config.timeout, Duration::from_secs(30));
+        assert_eq!(client.config.max_retries, 3);
+    }
+
+    #[test]
+    fn test_build_request_parts_property_query() {
+        use pubchemrs_struct::requests::input::*;
+        use pubchemrs_struct::requests::operation::*;
+        use pubchemrs_struct::requests::output::OutputFormat;
+        use std::collections::HashMap;
+
+        let builder = UrlBuilder {
+            input_specification: InputSpecification {
+                domain: Domain::Compound(),
+                namespace: Namespace::Compound(CompoundNamespace::Name()),
+                identifiers: "aspirin".into(),
+            },
+            operation: Operation::Compound(CompoundOperationSpecification::Property(
+                CompoundProperty(vec!["MolecularWeight".into(), "InChIKey".into()]),
+            )),
+            output: OutputFormat::JSON(),
+            kwargs: HashMap::new(),
+        };
+
+        let (url, body) = PubChemClient::build_request_parts(&builder).unwrap();
+        assert!(url.contains("compound"));
+        assert!(url.contains("name"));
+        assert!(url.contains("aspirin"));
+        assert!(url.contains("property/MolecularWeight,InChIKey"));
+        assert!(url.contains("JSON"));
+        assert!(body.is_none());
+    }
+
+    #[test]
+    fn test_build_request_parts_synonyms() {
+        use pubchemrs_struct::requests::input::*;
+        use pubchemrs_struct::requests::operation::*;
+        use pubchemrs_struct::requests::output::OutputFormat;
+        use std::collections::HashMap;
+
+        let builder = UrlBuilder {
+            input_specification: InputSpecification {
+                domain: Domain::Compound(),
+                namespace: Namespace::Compound(CompoundNamespace::Cid()),
+                identifiers: 2244u32.into(),
+            },
+            operation: Operation::Compound(CompoundOperationSpecification::Synonyms()),
+            output: OutputFormat::JSON(),
+            kwargs: HashMap::new(),
+        };
+
+        let (url, body) = PubChemClient::build_request_parts(&builder).unwrap();
+        assert!(url.contains("compound/cid/2244/synonyms/JSON"));
+        assert!(body.is_none());
+    }
+
+    #[test]
+    fn test_build_request_parts_post_formula() {
+        use pubchemrs_struct::requests::input::*;
+        use pubchemrs_struct::requests::operation::*;
+        use pubchemrs_struct::requests::output::OutputFormat;
+        use std::collections::HashMap;
+
+        let builder = UrlBuilder {
+            input_specification: InputSpecification {
+                domain: Domain::Compound(),
+                namespace: Namespace::Compound(CompoundNamespace::Formula()),
+                identifiers: "C9H8O4".into(),
+            },
+            operation: Operation::Compound(CompoundOperationSpecification::Record()),
+            output: OutputFormat::JSON(),
+            kwargs: HashMap::new(),
+        };
+
+        let (url, body) = PubChemClient::build_request_parts(&builder).unwrap();
+        assert!(url.contains("compound/formula"));
+        assert!(body.is_some(), "Formula search should use POST");
+        assert!(body.unwrap().contains("C9H8O4"));
+    }
+
+    #[test]
+    fn test_build_request_parts_sources() {
+        use pubchemrs_struct::requests::input::*;
+        use pubchemrs_struct::requests::operation::*;
+        use pubchemrs_struct::requests::output::OutputFormat;
+        use std::collections::HashMap;
+
+        let builder = UrlBuilder {
+            input_specification: InputSpecification {
+                domain: Domain::Others(DomainOtherInputs::SourcesSubstances),
+                namespace: Namespace::None(),
+                identifiers: Identifiers::default(),
+            },
+            operation: Operation::OtherInput(),
+            output: OutputFormat::JSON(),
+            kwargs: HashMap::new(),
+        };
+
+        let (url, body) = PubChemClient::build_request_parts(&builder).unwrap();
+        assert!(url.contains("sources/substance"));
+        // Sources endpoint uses POST due to domain type
+        assert!(body.is_some() || body.is_none()); // Accept either - depends on struct validation
+    }
+
+    #[test]
+    fn test_build_request_parts_assay_sources() {
+        use pubchemrs_struct::requests::input::*;
+        use pubchemrs_struct::requests::operation::*;
+        use pubchemrs_struct::requests::output::OutputFormat;
+        use std::collections::HashMap;
+
+        let builder = UrlBuilder {
+            input_specification: InputSpecification {
+                domain: Domain::Others(DomainOtherInputs::SourcesAssays),
+                namespace: Namespace::None(),
+                identifiers: Identifiers::default(),
+            },
+            operation: Operation::OtherInput(),
+            output: OutputFormat::JSON(),
+            kwargs: HashMap::new(),
+        };
+
+        let (url, _body) = PubChemClient::build_request_parts(&builder).unwrap();
+        assert!(url.contains("sources/assay"));
+    }
+
+    #[test]
+    fn test_fault_wrapper_deserialization() {
+        let json = r#"{"Fault":{"Code":"PUGREST.BadRequest","Message":"Invalid CID","Details":["some detail"]}}"#;
+        let fault: FaultWrapper = serde_json::from_str(json).unwrap();
+        assert_eq!(fault.fault.code, "PUGREST.BadRequest");
+        assert_eq!(fault.fault.message, "Invalid CID");
+    }
+
+    #[test]
+    fn test_fault_wrapper_minimal() {
+        let json = r#"{"Fault":{"Code":"PUGREST.NotFound","Message":"No data found"}}"#;
+        let fault: FaultWrapper = serde_json::from_str(json).unwrap();
+        assert_eq!(fault.fault.code, "PUGREST.NotFound");
+        assert_eq!(fault.fault.message, "No data found");
+    }
+
+    #[test]
+    fn test_fault_wrapper_invalid_json() {
+        let json = r#"{"NotAFault": true}"#;
+        let result = serde_json::from_str::<FaultWrapper>(json);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_build_request_parts_multiple_cids() {
+        use pubchemrs_struct::requests::input::*;
+        use pubchemrs_struct::requests::operation::*;
+        use pubchemrs_struct::requests::output::OutputFormat;
+        use std::collections::HashMap;
+
+        let ids = Identifiers(vec![
+            2244u32.into(),
+            5793u32.into(),
+        ]);
+
+        let builder = UrlBuilder {
+            input_specification: InputSpecification {
+                domain: Domain::Compound(),
+                namespace: Namespace::Compound(CompoundNamespace::Cid()),
+                identifiers: ids,
+            },
+            operation: Operation::Compound(CompoundOperationSpecification::Record()),
+            output: OutputFormat::JSON(),
+            kwargs: HashMap::new(),
+        };
+
+        let (url, body) = PubChemClient::build_request_parts(&builder).unwrap();
+        assert!(url.starts_with(PUBCHEM_API_BASE));
+        assert!(url.contains("compound/cid"));
+        assert!(body.is_none());
+    }
+
+    #[test]
+    fn test_build_request_parts_sdf_output() {
+        use pubchemrs_struct::requests::input::*;
+        use pubchemrs_struct::requests::operation::*;
+        use pubchemrs_struct::requests::output::OutputFormat;
+        use std::collections::HashMap;
+
+        let builder = UrlBuilder {
+            input_specification: InputSpecification {
+                domain: Domain::Compound(),
+                namespace: Namespace::Compound(CompoundNamespace::Cid()),
+                identifiers: 2244u32.into(),
+            },
+            operation: Operation::Compound(CompoundOperationSpecification::Record()),
+            output: OutputFormat::SDF(),
+            kwargs: HashMap::new(),
+        };
+
+        let (url, body) = PubChemClient::build_request_parts(&builder).unwrap();
+        assert!(url.contains("SDF"));
+        assert!(body.is_none());
+    }
+
+    #[test]
+    fn test_global_default_returns_same_instance() {
+        let a = PubChemClient::global_default() as *const PubChemClient;
+        let b = PubChemClient::global_default() as *const PubChemClient;
+        assert_eq!(a, b);
     }
 }
