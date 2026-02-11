@@ -1,3 +1,7 @@
+<!-- PROJECT SHIELDS -->
+[![CI][ci-shield]][ci-url]
+[![License][license-shield]][license-url]
+
 # pubchemrs2
 
 Async Rust client for the [PubChem PUG REST API](https://pubchem.ncbi.nlm.nih.gov/docs/pug-rest) with strongly-typed responses and optional Python bindings.
@@ -271,6 +275,18 @@ Requires Python 3.9+ (`abi3-py39`). CI builds wheels for Linux (x86_64, x86, aar
 
 Both crates use Rust Edition 2024, requiring **Rust 1.85.0** or later.
 
+## Roadmap
+
+- [x] Convenience API (`CompoundQuery`, `OtherInputsQuery`)
+- [x] Automatic retry with linear backoff
+- [x] Python bindings via PyO3/maturin
+- [ ] Typed responses for SourceTable and PeriodicTable endpoints
+- [ ] Classification and Standardize endpoint support in `OtherInputsQuery`
+- [ ] Response caching layer
+- [ ] Publish to crates.io
+
+See the [open issues](https://github.com/kkiyama117/PubChemrs/issues) for more.
+
 ## Alternatives
 
 ### [pubchem](https://crates.io/crates/pubchem)
@@ -287,18 +303,14 @@ Synchronous PubChem client using `ureq` and XML parsing. Simple API like `Compou
 
 ## Contributing
 
-```bash
-# Run all tests
-cargo test --workspace
+Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, coding guidelines, and the PR workflow.
 
-# Run single crate tests
-cargo test -p pubchemrs_struct
-cargo test -p pubchemrs_tokio
+## License
 
-# Run integration tests (requires network)
-cargo test -p pubchemrs_tokio -- --ignored
+Distributed under the MIT License. See [LICENSE](LICENSE) for details.
 
-# Format and lint
-cargo fmt --check
-cargo clippy
-```
+<!-- MARKDOWN LINKS -->
+[ci-shield]: https://img.shields.io/github/actions/workflow/status/kkiyama117/PubChemrs/ci.yml?branch=main&style=flat-square&label=CI
+[ci-url]: https://github.com/kkiyama117/PubChemrs/actions/workflows/ci.yml
+[license-shield]: https://img.shields.io/github/license/kkiyama117/PubChemrs?style=flat-square
+[license-url]: https://github.com/kkiyama117/PubChemrs/blob/main/LICENSE
