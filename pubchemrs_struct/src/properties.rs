@@ -283,8 +283,7 @@ pub struct PropertyTable {
 mod tests {
     use super::*;
 
-    const ASPIRIN_FIXTURE: &str =
-        include_str!("../tests/fixtures/aspirin_properties.json");
+    const ASPIRIN_FIXTURE: &str = include_str!("../tests/fixtures/aspirin_properties.json");
 
     #[test]
     fn test_deserialize_property_table_response() {
@@ -295,21 +294,16 @@ mod tests {
 
     #[test]
     fn test_deserialize_compound_properties_cid() {
-        let response: PropertyTableResponse =
-            serde_json::from_str(ASPIRIN_FIXTURE).unwrap();
+        let response: PropertyTableResponse = serde_json::from_str(ASPIRIN_FIXTURE).unwrap();
         let props = &response.property_table.properties[0];
         assert_eq!(props.cid, 2244);
     }
 
     #[test]
     fn test_deserialize_compound_properties_string_fields() {
-        let response: PropertyTableResponse =
-            serde_json::from_str(ASPIRIN_FIXTURE).unwrap();
+        let response: PropertyTableResponse = serde_json::from_str(ASPIRIN_FIXTURE).unwrap();
         let props = &response.property_table.properties[0];
-        assert_eq!(
-            props.molecular_formula.as_deref(),
-            Some("C9H8O4")
-        );
+        assert_eq!(props.molecular_formula.as_deref(), Some("C9H8O4"));
         assert_eq!(
             props.inchi.as_deref(),
             Some("InChI=1S/C9H8O4/c1-6(10)13-8-5-3-2-4-7(8)9(11)12/h2-5H,1H3,(H,11,12)")
@@ -318,24 +312,17 @@ mod tests {
             props.inchikey.as_deref(),
             Some("BSYNRYMUTXBXSQ-UHFFFAOYSA-N")
         );
-        assert_eq!(
-            props.iupac_name.as_deref(),
-            Some("2-acetyloxybenzoic acid")
-        );
+        assert_eq!(props.iupac_name.as_deref(), Some("2-acetyloxybenzoic acid"));
     }
 
     #[test]
     fn test_deserialize_smiles_all_variants() {
         // Aspirin fixture contains all 4 SMILES variants
-        let response: PropertyTableResponse =
-            serde_json::from_str(ASPIRIN_FIXTURE).unwrap();
+        let response: PropertyTableResponse = serde_json::from_str(ASPIRIN_FIXTURE).unwrap();
         let props = &response.property_table.properties[0];
 
         // Current fields
-        assert_eq!(
-            props.smiles.as_deref(),
-            Some("CC(=O)OC1=CC=CC=C1C(=O)O")
-        );
+        assert_eq!(props.smiles.as_deref(), Some("CC(=O)OC1=CC=CC=C1C(=O)O"));
         assert_eq!(
             props.connectivity_smiles.as_deref(),
             Some("CC(=O)OC1=CC=CC=C1C(=O)O")
@@ -371,10 +358,7 @@ mod tests {
             props.connectivity_smiles.as_deref(),
             Some("CC(=O)OC1=CC=CC=C1C(=O)O")
         );
-        assert_eq!(
-            props.smiles.as_deref(),
-            Some("CC(=O)OC1=CC=CC=C1C(=O)O")
-        );
+        assert_eq!(props.smiles.as_deref(), Some("CC(=O)OC1=CC=CC=C1C(=O)O"));
         // Legacy fields should be None
         assert!(props.canonical_smiles.is_none());
         assert!(props.isomeric_smiles.is_none());
@@ -411,8 +395,7 @@ mod tests {
 
     #[test]
     fn test_deserialize_compound_properties_numeric_fields() {
-        let response: PropertyTableResponse =
-            serde_json::from_str(ASPIRIN_FIXTURE).unwrap();
+        let response: PropertyTableResponse = serde_json::from_str(ASPIRIN_FIXTURE).unwrap();
         let props = &response.property_table.properties[0];
 
         // f64 fields
@@ -428,8 +411,7 @@ mod tests {
 
     #[test]
     fn test_deserialize_compound_properties_integer_fields() {
-        let response: PropertyTableResponse =
-            serde_json::from_str(ASPIRIN_FIXTURE).unwrap();
+        let response: PropertyTableResponse = serde_json::from_str(ASPIRIN_FIXTURE).unwrap();
         let props = &response.property_table.properties[0];
 
         assert_eq!(props.charge, Some(0));
@@ -477,11 +459,9 @@ mod tests {
 
     #[test]
     fn test_serialize_roundtrip() {
-        let response: PropertyTableResponse =
-            serde_json::from_str(ASPIRIN_FIXTURE).unwrap();
+        let response: PropertyTableResponse = serde_json::from_str(ASPIRIN_FIXTURE).unwrap();
         let serialized = serde_json::to_string(&response).unwrap();
-        let deserialized: PropertyTableResponse =
-            serde_json::from_str(&serialized).unwrap();
+        let deserialized: PropertyTableResponse = serde_json::from_str(&serialized).unwrap();
         let props = &deserialized.property_table.properties[0];
         assert_eq!(props.cid, 2244);
         assert_eq!(

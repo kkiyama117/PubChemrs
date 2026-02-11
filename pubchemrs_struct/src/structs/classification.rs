@@ -1,8 +1,5 @@
 /// Compound record type.
-#[derive(
-    Copy, Clone, Debug, PartialEq, Eq,
-    serde::Serialize, serde::Deserialize,
-)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "UPPERCASE")]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass)]
 pub enum CompoundIdType {
@@ -28,10 +25,7 @@ impl_enum_str!(CompoundIdType {
 });
 
 /// Coordinate Set Type Distinctions (response version).
-#[derive(
-    Copy, Clone, Debug, PartialEq, Eq,
-    serde::Serialize, serde::Deserialize,
-)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass)]
 pub enum ResponseCoordinateType {
     #[serde(rename = "TWOD")]
@@ -78,10 +72,7 @@ impl_enum_str!(ResponseCoordinateType {
 });
 
 /// Project Category Distinctions.
-#[derive(
-    Copy, Clone, Debug, PartialEq, Eq,
-    serde::Serialize, serde::Deserialize,
-)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass)]
 pub enum ProjectCategory {
     #[serde(rename = "MLSCN")]

@@ -36,7 +36,10 @@ mod tests {
             code: "PUGREST.BadRequest".to_string(),
             message: "Invalid CID".to_string(),
         };
-        assert_eq!(err.to_string(), "API fault: PUGREST.BadRequest - Invalid CID");
+        assert_eq!(
+            err.to_string(),
+            "API fault: PUGREST.BadRequest - Invalid CID"
+        );
     }
 
     #[test]

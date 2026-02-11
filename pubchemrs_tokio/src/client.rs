@@ -42,16 +42,13 @@ static DEFAULT_CLIENT: OnceLock<PubChemClient> = OnceLock::new();
 
 impl Default for PubChemClient {
     fn default() -> Self {
-        Self::new(ClientConfig::default())
-            .expect("failed to create default PubChem client")
+        Self::new(ClientConfig::default()).expect("failed to create default PubChem client")
     }
 }
 
 impl PubChemClient {
     pub fn new(config: ClientConfig) -> Result<Self> {
-        let client = reqwest::Client::builder()
-            .timeout(config.timeout)
-            .build()?;
+        let client = reqwest::Client::builder().timeout(config.timeout).build()?;
         Ok(Self { client, config })
     }
 
@@ -77,13 +74,20 @@ impl PubChemClient {
         for attempt in 0..=self.config.max_retries {
             if attempt > 0 {
                 let backoff = self.config.retry_delay * attempt;
-                log::warn!("Retry attempt {attempt}/{} after {backoff:?}", self.config.max_retries);
+                log::warn!(
+                    "Retry attempt {attempt}/{} after {backoff:?}",
+                    self.config.max_retries
+                );
                 tokio::time::sleep(backoff).await;
             }
 
             let request = match &body {
                 Some(post_body) => {
-                    log::debug!("POST {} body_len={}", url.split('?').next().unwrap_or(&url), post_body.len());
+                    log::debug!(
+                        "POST {} body_len={}",
+                        url.split('?').next().unwrap_or(&url),
+                        post_body.len()
+                    );
                     self.client
                         .post(&url)
                         .header("Content-Type", "application/x-www-form-urlencoded")
@@ -416,10 +420,7 @@ mod tests {
         use pubchemrs_struct::requests::output::OutputFormat;
         use std::collections::HashMap;
 
-        let ids = Identifiers(vec![
-            2244u32.into(),
-            5793u32.into(),
-        ]);
+        let ids = Identifiers(vec![2244u32.into(), 5793u32.into()]);
 
         let builder = UrlBuilder {
             input_specification: InputSpecification {

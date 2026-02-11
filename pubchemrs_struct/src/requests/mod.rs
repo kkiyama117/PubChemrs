@@ -6,4 +6,4 @@ pub mod output;
 pub mod url_builder;
 
 pub use common::{UrlParts, XRef};
-pub use url_builder::{UrlBuilder, PUBCHEM_API_BASE};
+pub use url_builder::{PUBCHEM_API_BASE, UrlBuilder};

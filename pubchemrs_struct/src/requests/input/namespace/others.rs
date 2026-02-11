@@ -1,8 +1,6 @@
 use crate::requests::input::Namespace;
 
-#[derive(
-    Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize,
-)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass)]
 pub enum GeneNamespace {
@@ -24,9 +22,7 @@ impl From<GeneNamespace> for Namespace {
     }
 }
 
-#[derive(
-    Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize,
-)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass)]
 pub enum ProteinNamespace {
@@ -48,9 +44,7 @@ impl From<ProteinNamespace> for Namespace {
     }
 }
 
-#[derive(
-    Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize,
-)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass)]
 pub enum PathWayNamespace {
@@ -68,9 +62,7 @@ impl From<PathWayNamespace> for Namespace {
     }
 }
 
-#[derive(
-    Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize,
-)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass)]
 pub enum TaxonomyNamespace {
@@ -90,9 +82,7 @@ impl From<TaxonomyNamespace> for Namespace {
     }
 }
 
-#[derive(
-    Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize,
-)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass)]
 pub enum CellNamespace {

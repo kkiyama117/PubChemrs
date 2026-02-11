@@ -60,4 +60,3 @@ macro_rules! impl_variant_array {
         }
     };
 }
-

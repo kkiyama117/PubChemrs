@@ -77,8 +77,8 @@ pub async fn get_synonyms(
 }
 
 /// Fetch all source names using a default client.
-pub async fn get_all_sources(
-    domain: Option<Domain>,
-) -> error::Result<Vec<String>> {
-    PubChemClient::global_default().get_all_sources(domain).await
+pub async fn get_all_sources(domain: Option<Domain>) -> error::Result<Vec<String>> {
+    PubChemClient::global_default()
+        .get_all_sources(domain)
+        .await
 }

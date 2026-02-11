@@ -43,8 +43,7 @@ impl std::fmt::Display for Bond {
 
 /// Bond Type Information.
 #[derive(
-    Copy, Clone, Debug, Default, PartialEq, Eq, Hash,
-    serde::Serialize, serde::Deserialize,
+    Copy, Clone, Debug, Default, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize,
 )]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass)]
 #[repr(u8)]
