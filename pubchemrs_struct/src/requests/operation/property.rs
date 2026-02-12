@@ -1,16 +1,20 @@
 use std::{fmt::Display, str::FromStr};
 
-/// API operation (what to do with the data)
+/// A list of compound property tags to retrieve from the PubChem API.
 #[derive(Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass)]
-pub struct CompoundProperty(pub Vec<CompoundPropertyTag>);
+pub struct CompoundProperty(
+    /// The list of property tag names (e.g., `MolecularFormula`, `MolecularWeight`).
+    pub Vec<CompoundPropertyTag>,
+);
 
 impl CompoundProperty {
+    /// Returns `true` if no property tags are present or all are empty.
     pub fn is_empty(&self) -> bool {
         self.0.is_empty() || self.0.iter().all(|inner| inner.is_empty())
     }
 
-    /// In Url, This is joined with ","
+    /// Formats the property tags as a comma-separated string for use in the URL path.
     pub fn to_url_string(&self) -> String {
         self.0
             .iter()
@@ -51,6 +55,5 @@ impl<I: Into<CompoundPropertyTag>> From<I> for CompoundProperty {
     }
 }
 
-/// Property of compound, or list of comma separated values
-/// TODO: Check All properties
+/// A compound property tag name (e.g., `MolecularFormula`, `MolecularWeight`, `IUPACName`).
 pub type CompoundPropertyTag = String;

@@ -20,6 +20,9 @@ version  = "0.28"
 optional = true
 features = ["abi3-py39"]
 
+[package.metadata.docs.rs]
+all-features = true
+
 [features]
 default = []
 pyo3    = ["dep:pyo3"]

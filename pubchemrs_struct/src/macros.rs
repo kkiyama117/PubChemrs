@@ -40,6 +40,7 @@ macro_rules! impl_from_repr {
         }
     ) => {
         impl $enum_name {
+            /// Convert a numeric representation back to the enum variant.
             pub fn from_repr(value: $repr_type) -> Option<Self> {
                 match value {
                     $( $value => Some($enum_name::$variant), )+
@@ -56,6 +57,7 @@ macro_rules! impl_variant_array {
         $enum_name:ident { $( $variant:ident ),+ $(,)? }
     ) => {
         impl $enum_name {
+            /// Array of all variants in declaration order.
             pub const VARIANTS: &[Self] = &[ $( $enum_name::$variant, )+ ];
         }
     };

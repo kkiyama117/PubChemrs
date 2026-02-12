@@ -1,23 +1,42 @@
+//! Error types for the `pubchemrs_tokio` HTTP client crate.
+
 use pubchemrs_struct::error::PubChemError;
 
+/// Error type for `pubchemrs_tokio` operations, covering HTTP, API, and parsing failures.
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
+    /// An error originating from `pubchemrs_struct` (invalid input, parse failure, etc.).
     #[error(transparent)]
     PubChem(#[from] PubChemError),
 
+    /// An HTTP transport error from `reqwest`.
     #[error("HTTP error: {0}")]
     Http(#[from] reqwest::Error),
 
+    /// A structured fault returned by the PubChem API (e.g., `PUGREST.BadRequest`).
     #[error("API fault: {code} - {message}")]
-    ApiFault { code: String, message: String },
+    ApiFault {
+        /// The PubChem fault code (e.g., `"PUGREST.NotFound"`).
+        code: String,
+        /// Human-readable fault message.
+        message: String,
+    },
 
+    /// A non-success HTTP status code with the response body.
     #[error("HTTP status {status}: {body}")]
-    HttpStatus { status: u16, body: String },
+    HttpStatus {
+        /// The HTTP status code.
+        status: u16,
+        /// The response body text.
+        body: String,
+    },
 
+    /// A JSON deserialization error.
     #[error("JSON parse error: {0}")]
     Json(#[from] serde_json::Error),
 }
 
+/// A type alias for `Result<T, Error>`.
 pub type Result<T> = std::result::Result<T, Error>;
 
 #[cfg(test)]

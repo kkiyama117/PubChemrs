@@ -1,12 +1,16 @@
 use crate::requests::input::Namespace;
 
+/// Namespace for the gene domain.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass)]
 pub enum GeneNamespace {
+    /// NCBI gene ID (API value: `geneid`)
     #[default]
     GeneID,
+    /// Gene symbol (API value: `genesymbol`)
     GeneSymbol,
+    /// GenBank/RefSeq accession (API value: `accession`)
     Accession,
 }
 
@@ -22,13 +26,17 @@ impl From<GeneNamespace> for Namespace {
     }
 }
 
+/// Namespace for the protein domain.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass)]
 pub enum ProteinNamespace {
+    /// Protein accession number (API value: `accession`)
     #[default]
     Accession,
+    /// NCBI protein GI number (API value: `gi`)
     GI,
+    /// Protein synonym (API value: `synonim`)
     Synonim,
 }
 
@@ -44,10 +52,12 @@ impl From<ProteinNamespace> for Namespace {
     }
 }
 
+/// Namespace for the pathway domain.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass)]
 pub enum PathWayNamespace {
+    /// Pathway accession number (API value: `pwacc`)
     #[default]
     Pwacc,
 }
@@ -62,12 +72,15 @@ impl From<PathWayNamespace> for Namespace {
     }
 }
 
+/// Namespace for the taxonomy domain.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass)]
 pub enum TaxonomyNamespace {
+    /// NCBI taxonomy ID (API value: `taxid`)
     #[default]
     TaxID,
+    /// Taxonomy synonym (API value: `synonim`)
     Synonim,
 }
 
@@ -82,12 +95,15 @@ impl From<TaxonomyNamespace> for Namespace {
     }
 }
 
+/// Namespace for the cell line domain.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass)]
 pub enum CellNamespace {
+    /// Cell line accession number (API value: `cellacc`)
     #[default]
     CellAcc,
+    /// Cell line synonym (API value: `synonim`)
     Synonim,
 }
 

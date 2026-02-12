@@ -1,9 +1,12 @@
+/// Dimensionality of atom coordinates.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass)]
 pub enum CoordinateType {
+    /// Two-dimensional coordinates (x, y).
     #[serde(rename = "2d")]
     TwoD,
+    /// Three-dimensional coordinates (x, y, z).
     #[default]
     #[serde(rename = "3d")]
     ThreeD,
@@ -14,19 +17,24 @@ impl_enum_str!(CoordinateType {
     ThreeD => "3d",
 });
 
+/// A 2D or 3D spatial coordinate.
 #[derive(Debug, Copy, Clone, Default, PartialEq, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass)]
 pub struct Coordinate {
+    /// X coordinate.
     #[serde(default)]
     pub x: Option<f32>,
+    /// Y coordinate.
     #[serde(default)]
     pub y: Option<f32>,
+    /// Z coordinate (absent for 2D structures).
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default)]
     pub z: Option<f32>,
 }
 
 impl Coordinate {
+    /// Creates a new coordinate from x, y, and optional z values.
     pub fn new(x: f32, y: f32, z: Option<f32>) -> Self {
         Self {
             x: Some(x),
@@ -35,6 +43,7 @@ impl Coordinate {
         }
     }
 
+    /// Returns whether this coordinate is 2D or 3D based on the presence of z.
     pub fn coordinate_type(&self) -> CoordinateType {
         match self.z {
             Some(_) => CoordinateType::ThreeD,
@@ -55,6 +64,7 @@ impl<'a> IntoIterator for &'a Coordinate {
     }
 }
 
+/// Iterator over the (axis_name, value) pairs of a [`Coordinate`].
 pub struct CoordinateIterator<'a> {
     inner: &'a Coordinate,
     index: usize,

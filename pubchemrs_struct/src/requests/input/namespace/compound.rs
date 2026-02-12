@@ -5,25 +5,34 @@ use crate::requests::{
     input::Namespace,
 };
 
+/// Namespace for the compound domain, specifying how to look up compounds.
 #[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass)]
 pub enum CompoundNamespace {
-    /// Chemical ID
+    /// PubChem Compound ID (API value: `cid`)
     Cid(),
-    /// Chemical name
+    /// Chemical name lookup (API value: `name`)
     Name(),
+    /// SMILES notation (API value: `smiles`). Uses POST.
     Smiles(),
+    /// InChI notation (API value: `inchi`). Uses POST.
     InChI(),
+    /// SDF (Structure-Data File) input (API value: `sdf`). Uses POST.
     Sdf(),
+    /// InChIKey lookup (API value: `inchikey`)
     InchiKey(),
+    /// Molecular formula search (API value: `formula`). Uses POST.
     Formula(),
-    // TODO: Fix
+    /// Structure-based search (substructure, superstructure, similarity, identity)
     StructureSearch(StructureSearch),
+    /// Cross-reference lookup (API path: `xref/<type>`)
     XRef(XRef),
-    /// Not Implemented now.
+    /// Mass-based lookup (API value: `mass`). Not fully implemented.
     Mass(),
+    /// Async list key for paginated results (API value: `listkey`). Uses POST.
     ListKey(),
+    /// PubChem fast search (identity, similarity, substructure, etc.)
     FastSearch(FastSearch),
 }
 
@@ -96,12 +105,14 @@ impl FromStr for CompoundNamespace {
     }
 }
 
-/// Search namespace (how to interpret the identifier)
+/// Structure search specification combining a search type and input format.
 #[derive(Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass)]
 pub struct StructureSearch {
+    /// The type of structure search to perform.
     pub key: CompoundDomainStructureSearchKey,
+    /// The input format for the structure query.
     pub value: CompoundDomainStructureSearchValue,
 }
 
@@ -136,15 +147,19 @@ impl FromStr for StructureSearch {
     }
 }
 
-/// Advanced search type
+/// Type of structure search to perform against PubChem.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass)]
 pub enum CompoundDomainStructureSearchKey {
+    /// Substructure search (API value: `substructure`)
     #[default]
     Substructure,
+    /// Superstructure search (API value: `superstructure`)
     SuperStructure,
+    /// Similarity search (API value: `similarity`)
     Similarity,
+    /// Identity search (API value: `identity`)
     Identity,
 }
 
@@ -155,14 +170,19 @@ impl_enum_str!(CompoundDomainStructureSearchKey {
     Identity => "identity",
 });
 
+/// Input format for structure search queries.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass)]
 pub enum CompoundDomainStructureSearchValue {
+    /// SMILES notation (API value: `smiles`)
     #[default]
     Smiles,
+    /// InChI notation (API value: `inchi`)
     InchI,
+    /// SDF format (API value: `sdf`)
     Sdf,
+    /// PubChem CID (API value: `cid`)
     Cid,
 }
 
@@ -173,11 +193,14 @@ impl_enum_str!(CompoundDomainStructureSearchValue {
     Cid => "cid",
 });
 
+/// PubChem fast search specification combining a search type and input format.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass)]
 pub struct FastSearch {
+    /// The type of fast search to perform.
     pub key: CompoundDomainFastSearchKey,
+    /// The input format for the fast search query.
     pub value: CompoundDomainFastSearchValue,
 }
 
@@ -217,16 +240,23 @@ impl FromStr for FastSearch {
     }
 }
 
+/// Type of PubChem fast search operation.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass)]
 pub enum CompoundDomainFastSearchKey {
+    /// Fast identity search (API value: `fastidentity`)
     #[default]
     FastIdentity,
+    /// Fast 2D similarity search (API value: `fastsimilarity_2d`)
     FastSimilarity2D,
+    /// Fast 3D similarity search (API value: `fastsimilarity_3d`)
     FastSimilarity3D,
+    /// Fast substructure search (API value: `fastsubstructure`)
     FastSubstructure,
+    /// Fast superstructure search (API value: `fastsuperstructure`)
     FastSuperStructure,
+    /// Fast formula search (API value: `fastformula`)
     FastFormula,
 }
 
@@ -239,17 +269,23 @@ impl_enum_str!(CompoundDomainFastSearchKey {
     FastFormula => "fastformula",
 });
 
+/// Input format for PubChem fast search queries.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass)]
 pub enum CompoundDomainFastSearchValue {
+    /// SMILES notation (API value: `smiles`)
     #[default]
     Smiles,
+    /// SMARTS pattern (API value: `smarts`)
     Smarts,
+    /// InChI notation (API value: `inchi`)
     InchI,
+    /// SDF format (API value: `sdf`)
     Sdf,
+    /// PubChem CID (API value: `cid`)
     Cid,
-    /// Only for `CompoundDomainFastSearchKey::FastFormula`
+    /// No input format, used only with `FastFormula` (API value: `none`)
     None,
 }
 

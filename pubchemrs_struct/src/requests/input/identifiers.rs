@@ -15,6 +15,7 @@ use crate::requests::common::UrlParts;
 pub struct Identifiers(pub Vec<IdentifierValue>);
 
 impl Identifiers {
+    /// Returns `true` if no identifiers are present or all are empty.
     pub fn is_empty(&self) -> bool {
         self.0.is_empty() || self.0.iter().all(|inner| inner.is_empty())
     }
@@ -44,13 +45,15 @@ impl<I: Into<IdentifierValue>> From<I> for Identifiers {
     }
 }
 
-/// Individual identifier value for lists
+/// A single identifier value, either numeric or string.
 #[derive(
     Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord, serde::Serialize, serde::Deserialize,
 )]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass)]
 pub enum IdentifierValue {
+    /// Numeric identifier (e.g., CID, SID, AID).
     Int(u32),
+    /// String identifier (e.g., chemical name, InChI, SMILES).
     String(String),
 }
 
@@ -70,6 +73,7 @@ impl Display for IdentifierValue {
 }
 
 impl IdentifierValue {
+    /// Returns `true` if this identifier is empty (zero for `Int`, empty string for `String`).
     pub fn is_empty(&self) -> bool {
         match self {
             IdentifierValue::Int(i) => *i == 0,

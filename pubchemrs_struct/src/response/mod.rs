@@ -4,34 +4,42 @@
 //! and we get it as `inner` record and convert it into better struct to use.
 //! Recommend to transform structs below to useful structs with `into()` or `try_into()` when you use.
 
+/// Raw compound record types from the PubChem API.
 pub mod compound;
+/// Information list response types (synonyms, source names, etc.).
 pub mod information_list;
 
 pub use self::compound::{Compound, Compounds};
 pub use self::information_list::*;
 
-/// Root Response of PubChem API
+/// Root response envelope from the PubChem PUG REST API.
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub enum PubChemResponse {
+    /// Full compound records (`PC_Compounds`).
     #[serde(rename = "PC_Compounds")]
     Compounds(Compounds),
+    /// Compound property table (not yet fully typed).
     // TODO: Implement
     CompoundProperties(serde_json::Value),
+    /// Information list (synonyms, source names, etc.).
     InformationList(PubChemInformationList),
+    /// API error / fault response.
     Fault(PubChemFault),
-    /// Maybe this is not implemented
+    /// Unrecognized response shape.
     Unknown(serde_json::Value),
 }
 
-/// API Fault/Error response from PubChem
-/// TODO: Implement and Fix
+/// API fault/error response returned by PubChem when a request fails.
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass)]
 pub struct PubChemFault {
+    /// Machine-readable error code (e.g. `"PUGREST.BadRequest"`).
     #[serde(rename = "Code")]
     pub code: String,
+    /// Human-readable error message.
     #[serde(rename = "Message")]
     pub message: String,
+    /// Additional detail strings, if any.
     #[serde(rename = "Details", default)]
     pub details: Vec<String>,
 }

@@ -5,17 +5,22 @@ use super::super::Namespace;
 use crate::requests::common::UrlParts;
 use crate::requests::common::XRef;
 
+/// Namespace for the substance domain, specifying how to look up substances.
 #[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass)]
 pub enum SubstanceNamespace {
-    /// Substance ID
+    /// PubChem Substance ID (API value: `sid`)
     Sid(),
+    /// Source-specific ID with depositor ID (API path: `sourceid/<id>`)
     SourcdId(u32),
-    /// Source Name is `any valid PubChem depositor name`
+    /// Search all sources by depositor name (API path: `sourceall/<name>`)
     SourceAll(String),
+    /// Substance name lookup (API value: `name`)
     Name(),
+    /// Cross-reference lookup (API path: `xref/<type>`)
     XRef(XRef),
+    /// Async list key for paginated results (API value: `listkey`)
     ListKey(),
 }
 

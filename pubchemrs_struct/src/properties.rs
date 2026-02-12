@@ -1,3 +1,5 @@
+//! Strongly-typed compound property definitions for the PubChem PropertyTable API.
+
 use serde::{Deserialize, Deserializer, Serialize};
 
 /// Deserialize a value that may be either a number or a string containing a number.
@@ -110,12 +112,15 @@ where
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass(get_all))]
 pub struct CompoundProperties {
+    /// PubChem Compound Identifier (CID). Always present in API responses.
     #[serde(rename = "CID")]
     pub cid: u64,
 
+    /// Molecular formula (e.g., `"C9H8O4"` for aspirin). PubChem key: `MolecularFormula`.
     #[serde(rename = "MolecularFormula", default)]
     pub molecular_formula: Option<String>,
 
+    /// Molecular weight in g/mol. Deserialized from string or number. PubChem key: `MolecularWeight`.
     #[serde(
         rename = "MolecularWeight",
         default,
@@ -148,18 +153,23 @@ pub struct CompoundProperties {
     #[serde(rename = "IsomericSMILES", default)]
     pub isomeric_smiles: Option<String>,
 
+    /// IUPAC International Chemical Identifier. PubChem key: `InChI`.
     #[serde(rename = "InChI", default)]
     pub inchi: Option<String>,
 
+    /// Hashed InChI key (27-character fixed-length identifier). PubChem key: `InChIKey`.
     #[serde(rename = "InChIKey", default)]
     pub inchikey: Option<String>,
 
+    /// Preferred IUPAC name for the compound. PubChem key: `IUPACName`.
     #[serde(rename = "IUPACName", default)]
     pub iupac_name: Option<String>,
 
+    /// Computed octanol-water partition coefficient (XLogP3). PubChem key: `XLogP`.
     #[serde(rename = "XLogP", default)]
     pub xlogp: Option<f64>,
 
+    /// Exact mass in Da. Deserialized from string or number. PubChem key: `ExactMass`.
     #[serde(
         rename = "ExactMass",
         default,
@@ -167,6 +177,7 @@ pub struct CompoundProperties {
     )]
     pub exact_mass: Option<f64>,
 
+    /// Monoisotopic mass in Da. Deserialized from string or number. PubChem key: `MonoisotopicMass`.
     #[serde(
         rename = "MonoisotopicMass",
         default,
@@ -174,107 +185,139 @@ pub struct CompoundProperties {
     )]
     pub monoisotopic_mass: Option<f64>,
 
+    /// Topological polar surface area in Angstrom squared. PubChem key: `TPSA`.
     #[serde(rename = "TPSA", default)]
     pub tpsa: Option<f64>,
 
+    /// Bertz/Hendrickson/Ihlenfeldt complexity value. PubChem key: `Complexity`.
     #[serde(rename = "Complexity", default)]
     pub complexity: Option<f64>,
 
+    /// Formal charge of the compound. PubChem key: `Charge`.
     #[serde(rename = "Charge", default)]
     pub charge: Option<i32>,
 
+    /// Number of hydrogen bond donors. PubChem key: `HBondDonorCount`.
     #[serde(rename = "HBondDonorCount", default)]
     pub h_bond_donor_count: Option<u32>,
 
+    /// Number of hydrogen bond acceptors. PubChem key: `HBondAcceptorCount`.
     #[serde(rename = "HBondAcceptorCount", default)]
     pub h_bond_acceptor_count: Option<u32>,
 
+    /// Number of rotatable bonds. PubChem key: `RotatableBondCount`.
     #[serde(rename = "RotatableBondCount", default)]
     pub rotatable_bond_count: Option<u32>,
 
+    /// Hex-encoded 881-bit PubChem 2D fingerprint. PubChem key: `Fingerprint2D`.
     #[serde(rename = "Fingerprint2D", default)]
     pub fingerprint: Option<String>,
 
+    /// Number of non-hydrogen atoms. PubChem key: `HeavyAtomCount`.
     #[serde(rename = "HeavyAtomCount", default)]
     pub heavy_atom_count: Option<u32>,
 
+    /// Number of atoms with non-standard isotope labels. PubChem key: `IsotopeAtomCount`.
     #[serde(rename = "IsotopeAtomCount", default)]
     pub isotope_atom_count: Option<u32>,
 
+    /// Total number of atom stereocenters. PubChem key: `AtomStereoCount`.
     #[serde(rename = "AtomStereoCount", default)]
     pub atom_stereo_count: Option<u32>,
 
+    /// Number of defined atom stereocenters. PubChem key: `DefinedAtomStereoCount`.
     #[serde(rename = "DefinedAtomStereoCount", default)]
     pub defined_atom_stereo_count: Option<u32>,
 
+    /// Number of undefined atom stereocenters. PubChem key: `UndefinedAtomStereoCount`.
     #[serde(rename = "UndefinedAtomStereoCount", default)]
     pub undefined_atom_stereo_count: Option<u32>,
 
+    /// Total number of bond stereocenters. PubChem key: `BondStereoCount`.
     #[serde(rename = "BondStereoCount", default)]
     pub bond_stereo_count: Option<u32>,
 
+    /// Number of defined bond stereocenters. PubChem key: `DefinedBondStereoCount`.
     #[serde(rename = "DefinedBondStereoCount", default)]
     pub defined_bond_stereo_count: Option<u32>,
 
+    /// Number of undefined bond stereocenters. PubChem key: `UndefinedBondStereoCount`.
     #[serde(rename = "UndefinedBondStereoCount", default)]
     pub undefined_bond_stereo_count: Option<u32>,
 
+    /// Number of covalently bonded units in the compound. PubChem key: `CovalentUnitCount`.
     #[serde(rename = "CovalentUnitCount", default)]
     pub covalent_unit_count: Option<u32>,
 
+    /// 3D molecular volume in Angstrom cubed. PubChem key: `Volume3D`.
     #[serde(rename = "Volume3D", default)]
     pub volume_3d: Option<f64>,
 
+    /// RMSD of the 3D conformer model. PubChem key: `ConformerModelRMSD3D`.
     #[serde(rename = "ConformerModelRMSD3D", default)]
     pub conformer_rmsd_3d: Option<f64>,
 
+    /// Effective rotor count for the 3D conformer. PubChem key: `EffectiveRotorCount3D`.
     #[serde(rename = "EffectiveRotorCount3D", default)]
     pub effective_rotor_count_3d: Option<f64>,
 
+    /// Number of 3D conformers generated. PubChem key: `ConformerCount3D`.
     #[serde(rename = "ConformerCount3D", default)]
     pub conformer_count_3d: Option<u32>,
 
+    /// X-component of the 3D steric quadrupole. PubChem key: `XStericQuadrupole3D`.
     #[serde(rename = "XStericQuadrupole3D", default)]
     pub x_steric_quadrupole_3d: Option<f64>,
 
+    /// Y-component of the 3D steric quadrupole. PubChem key: `YStericQuadrupole3D`.
     #[serde(rename = "YStericQuadrupole3D", default)]
     pub y_steric_quadrupole_3d: Option<f64>,
 
+    /// Z-component of the 3D steric quadrupole. PubChem key: `ZStericQuadrupole3D`.
     #[serde(rename = "ZStericQuadrupole3D", default)]
     pub z_steric_quadrupole_3d: Option<f64>,
 
+    /// Total number of 3D pharmacophore features. PubChem key: `FeatureCount3D`.
     #[serde(rename = "FeatureCount3D", default)]
     pub feature_count_3d: Option<u32>,
 
+    /// Number of hydrogen bond acceptor features in 3D. PubChem key: `FeatureAcceptorCount3D`.
     #[serde(rename = "FeatureAcceptorCount3D", default)]
     pub feature_acceptor_count_3d: Option<u32>,
 
+    /// Number of hydrogen bond donor features in 3D. PubChem key: `FeatureDonorCount3D`.
     #[serde(rename = "FeatureDonorCount3D", default)]
     pub feature_donor_count_3d: Option<u32>,
 
+    /// Number of anion features in 3D. PubChem key: `FeatureAnionCount3D`.
     #[serde(rename = "FeatureAnionCount3D", default)]
     pub feature_anion_count_3d: Option<u32>,
 
+    /// Number of cation features in 3D. PubChem key: `FeatureCationCount3D`.
     #[serde(rename = "FeatureCationCount3D", default)]
     pub feature_cation_count_3d: Option<u32>,
 
+    /// Number of ring features in 3D. PubChem key: `FeatureRingCount3D`.
     #[serde(rename = "FeatureRingCount3D", default)]
     pub feature_ring_count_3d: Option<u32>,
 
+    /// Number of hydrophobe features in 3D. PubChem key: `FeatureHydrophobeCount3D`.
     #[serde(rename = "FeatureHydrophobeCount3D", default)]
     pub feature_hydrophobe_count_3d: Option<u32>,
 }
 
-/// Wrapper for the PubChem PropertyTable API response.
+/// Top-level wrapper for the PubChem PropertyTable API JSON response.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PropertyTableResponse {
+    /// The property table containing all returned compound properties.
     #[serde(rename = "PropertyTable")]
     pub property_table: PropertyTable,
 }
 
-/// Container for a list of compound properties.
+/// Container holding a list of [`CompoundProperties`] entries.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PropertyTable {
+    /// The list of compound property records returned by the API.
     #[serde(rename = "Properties")]
     pub properties: Vec<CompoundProperties>,
 }

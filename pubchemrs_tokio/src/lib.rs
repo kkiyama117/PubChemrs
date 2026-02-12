@@ -61,8 +61,13 @@
 //! # }
 //! ```
 
+#![warn(missing_docs)]
+
+/// High-level API methods for common PubChem queries.
 pub mod api;
+/// HTTP client with retry logic and connection pooling.
 pub mod client;
+/// Ergonomic convenience API for common PubChem queries.
 pub mod convenience;
 pub mod error;
 

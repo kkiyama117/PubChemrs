@@ -1,3 +1,5 @@
+//! Namespace types that determine how identifiers are interpreted in PubChem API requests.
+
 mod assay;
 mod compound;
 mod others;
@@ -10,20 +12,28 @@ pub use compound::*;
 pub use others::*;
 pub use substance::*;
 
-/// Search namespace (how to interpret the identifier)
+/// Namespace specifying how identifiers are interpreted in a PubChem API request.
 #[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase", untagged)]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass)]
 pub enum Namespace {
+    /// Compound-specific namespace (CID, name, SMILES, etc.)
     Compound(CompoundNamespace),
+    /// Substance-specific namespace (SID, source, etc.)
     Substance(SubstanceNamespace),
+    /// Assay-specific namespace (AID, type, target, etc.)
     Assay(AssayNamespace),
+    /// Gene-specific namespace (gene ID, symbol, etc.)
     Gene(GeneNamespace),
+    /// Protein-specific namespace (accession, GI, etc.)
     Protein(ProteinNamespace),
+    /// Pathway-specific namespace (pathway accession)
     PathWay(PathWayNamespace),
+    /// Taxonomy-specific namespace (taxonomy ID, etc.)
     Taxonomy(TaxonomyNamespace),
+    /// Cell line-specific namespace (cell accession, etc.)
     Cell(CellNamespace),
-    /// Only for `<other inputs>`
+    /// Empty namespace, used only for `DomainOtherInputs` domains.
     None(),
 }
 

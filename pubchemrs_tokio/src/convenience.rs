@@ -1,7 +1,7 @@
 //! Ergonomic convenience API for common PubChem queries.
 //!
 //! This module provides [`CompoundQuery`] and [`OtherInputsQuery`] as high-level
-//! entry points that build on the lower-level [`PubChemClient`](crate::PubChemClient) methods.
+//! entry points that build on the lower-level [`PubChemClient`] methods.
 //!
 //! # Examples
 //!

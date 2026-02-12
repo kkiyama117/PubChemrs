@@ -3,20 +3,28 @@ use std::str::FromStr;
 
 use crate::requests::common::UrlParts;
 
-/// API domain (what type of data to retrieve)
+/// API domain specifying the type of PubChem data to query.
 #[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass)]
 pub enum Domain {
+    /// Chemical compound domain (API value: `compound`)
     Compound(),
+    /// Substance domain (API value: `substance`)
     Substance(),
+    /// BioAssay domain (API value: `assay`)
     Assay(),
+    /// Gene domain (API value: `gene`)
     Gene(),
+    /// Protein domain (API value: `protein`)
     Protein(),
+    /// Biological pathway domain (API value: `pathway`)
     PathWay(),
+    /// Taxonomy domain (API value: `taxonomy`)
     Taxonomy(),
+    /// Cell line domain (API value: `cell`)
     Cell(),
-    /// TODO: Implement this
+    /// Other specialized input domains (sources, annotations, etc.)
     Others(DomainOtherInputs),
 }
 
@@ -70,20 +78,27 @@ impl Default for Domain {
     }
 }
 
+/// Specialized input domains that do not follow the standard domain/namespace/identifier pattern.
 #[derive(Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass)]
 pub enum DomainOtherInputs {
+    /// List all substance data sources (API path: `sources/substance`)
     #[default]
     SourcesSubstances,
+    /// List all assay data sources (API path: `sources/assay`)
     SourcesAssays,
+    /// Source table information (API value: `sourcetable`)
     SourceTable,
+    /// 3D conformer data (API value: `conformers`)
     Conformers,
-    // TODO: Implement this
-    /// SourceName or heading continues
+    /// Annotation data by source name or heading (API value: `annotations`)
     Annotations,
+    /// Hierarchical classification data (API value: `classification`)
     Classification,
+    /// Chemical structure standardization (API value: `standardize`)
     Standardize,
+    /// Periodic table element data (API value: `periodictable`)
     Periodictable,
 }
 

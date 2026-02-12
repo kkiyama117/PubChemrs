@@ -1,33 +1,46 @@
-//! Common parts and trait for UrlBuilder
+//! Common traits and types shared across request construction.
 
+/// Trait for types that can produce URL path segments.
 pub trait UrlParts {
+    /// Converts this value into a list of URL path segments.
     fn to_url_parts(&self) -> Vec<String>;
 }
 
-/// Xref
+/// Cross-reference type for linking PubChem records to external databases.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass)]
 pub enum XRef {
+    /// Registry ID (API value: `resigtryid`)
     #[default]
     ResigtryId,
+    /// CAS Registry Number (API value: `rn`)
     Rn,
+    /// PubMed article ID (API value: `pubmedid`)
     PubMedId,
+    /// MMDB structure ID (API value: `mmdbid`)
     MmdbId,
-    /// May not exists
+    /// Depositor database URL (API value: `dburl`). May not exist for all records.
     DbUrl,
-    /// May not exists
+    /// Substance browser URL (API value: `sburl`). May not exist for all records.
     SbUrl,
+    /// NCBI protein GI number (API value: `proteingi`)
     ProteinGi,
+    /// NCBI nucleotide GI number (API value: `nucleotidegi`)
     NucleotideGi,
+    /// NCBI taxonomy ID (API value: `taxonomyid`)
     TaxonomyId,
+    /// OMIM (Mendelian Inheritance in Man) ID (API value: `mimid`)
     MimId,
+    /// NCBI gene ID (API value: `geneid`)
     GeneId,
+    /// NCBI probe ID (API value: `probeid`)
     ProbeId,
+    /// Patent ID (API value: `patentid`)
     PatentId,
-    /// May not exists
+    /// Depositor source name (API value: `sourcename`). May not exist for all records.
     SourceName,
-    /// May not exists
+    /// Source category (API value: `sourcecategory`). May not exist for all records.
     SourceCategory,
 }
 

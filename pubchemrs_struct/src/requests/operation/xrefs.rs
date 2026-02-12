@@ -2,17 +2,21 @@ use std::{fmt::Display, str::FromStr};
 
 use crate::requests::common::XRef;
 
-/// API operation (what to do with the data)
+/// A list of cross-reference types to retrieve from the PubChem API.
 #[derive(Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass)]
-pub struct XRefs(pub Vec<XRef>);
+pub struct XRefs(
+    /// The list of cross-reference types to retrieve.
+    pub Vec<XRef>,
+);
 
 impl XRefs {
+    /// Returns `true` if no cross-reference types are present.
     pub fn is_empty(&self) -> bool {
         self.0.is_empty()
     }
 
-    /// In Url, This is joined with ","
+    /// Formats the cross-reference types as a comma-separated string for use in the URL path.
     pub fn to_url_string(&self) -> String {
         self.0
             .iter()

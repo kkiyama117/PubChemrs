@@ -9,8 +9,11 @@ use crate::error::{Error, Result};
 /// Configuration for the PubChem HTTP client.
 #[derive(Debug, Clone)]
 pub struct ClientConfig {
+    /// HTTP request timeout (default: 30 seconds).
     pub timeout: Duration,
+    /// Maximum number of retry attempts on retryable errors (default: 3).
     pub max_retries: u32,
+    /// Base delay between retries, multiplied by attempt number (default: 500ms).
     pub retry_delay: Duration,
 }
 
@@ -47,6 +50,7 @@ impl Default for PubChemClient {
 }
 
 impl PubChemClient {
+    /// Create a new client with the given configuration.
     pub fn new(config: ClientConfig) -> Result<Self> {
         let client = reqwest::Client::builder().timeout(config.timeout).build()?;
         Ok(Self { client, config })
