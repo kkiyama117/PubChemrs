@@ -1,13 +1,14 @@
 //! Higher-level structural types for working with PubChem data.
 //!
 //! These types provide a more ergonomic interface than the raw API response
-//! types in [`crate::response`]. Use [`crate::response::Compound::setup_atoms`]
-//! and [`crate::response::Compound::setup_bonds`] to convert raw records.
+//! types in [`crate::response`]. Use `TryFrom<&response::Compound>` to convert
+//! raw records into [`Atom`] and [`Bond`] collections.
 
 mod atom;
 mod bond;
 mod classification;
 mod compound;
+pub(crate) mod convert;
 mod coordinates;
 
 pub use atom::{Atom, Element};
