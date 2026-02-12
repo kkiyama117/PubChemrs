@@ -27,9 +27,10 @@ impl Bond {
         }
     }
 
-    /// Sets the display style annotation for this bond.
-    pub fn set_style(&mut self, style: Option<u32>) {
-        self.style = style;
+    /// Returns a new bond with the given display style annotation.
+    #[must_use]
+    pub fn with_style(self, style: Option<u32>) -> Self {
+        Self { style, ..self }
     }
 
     /// Returns `true` if this bond connects the same pair of atoms as `other`.

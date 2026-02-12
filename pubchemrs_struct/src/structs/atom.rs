@@ -48,7 +48,7 @@ impl Atom {
         }
     }
 
-    pub(crate) fn _from_record_data(
+    pub(crate) fn from_record_data(
         aid: u32,
         element: Element,
         coordinate: Option<Coordinate>,
