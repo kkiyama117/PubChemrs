@@ -11,9 +11,9 @@ pub trait UrlParts {
 #[serde(rename_all = "lowercase")]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass)]
 pub enum XRef {
-    /// Registry ID (API value: `resigtryid`)
+    /// Registry ID (API value: `registryid`)
     #[default]
-    ResigtryId,
+    RegistryId,
     /// CAS Registry Number (API value: `rn`)
     Rn,
     /// PubMed article ID (API value: `pubmedid`)
@@ -45,7 +45,7 @@ pub enum XRef {
 }
 
 impl_enum_str!(XRef {
-    ResigtryId => "resigtryid",
+    RegistryId => "registryid",
     Rn => "rn",
     PubMedId => "pubmedid",
     MmdbId => "mmdbid",
@@ -69,7 +69,7 @@ mod tests {
 
     #[test]
     fn test_xref_parse() {
-        assert_eq!(XRef::from_str("resigtryid").unwrap(), XRef::ResigtryId);
+        assert_eq!(XRef::from_str("registryid").unwrap(), XRef::RegistryId);
         assert_eq!(XRef::from_str("rn").unwrap(), XRef::Rn);
         assert_eq!(XRef::from_str("pubmedid").unwrap(), XRef::PubMedId);
         assert_eq!(XRef::from_str("mmdbid").unwrap(), XRef::MmdbId);

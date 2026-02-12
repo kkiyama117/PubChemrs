@@ -36,14 +36,14 @@ pub enum ProteinNamespace {
     Accession,
     /// NCBI protein GI number (API value: `gi`)
     GI,
-    /// Protein synonym (API value: `synonim`)
-    Synonim,
+    /// Protein synonym (API value: `synonym`)
+    Synonym,
 }
 
 impl_enum_str!(ProteinNamespace {
     Accession => "accession",
     GI => "gi",
-    Synonim => "synonim",
+    Synonym => "synonym",
 });
 
 impl From<ProteinNamespace> for Namespace {
@@ -80,13 +80,13 @@ pub enum TaxonomyNamespace {
     /// NCBI taxonomy ID (API value: `taxid`)
     #[default]
     TaxID,
-    /// Taxonomy synonym (API value: `synonim`)
-    Synonim,
+    /// Taxonomy synonym (API value: `synonym`)
+    Synonym,
 }
 
 impl_enum_str!(TaxonomyNamespace {
     TaxID => "taxid",
-    Synonim => "synonim",
+    Synonym => "synonym",
 });
 
 impl From<TaxonomyNamespace> for Namespace {
@@ -103,13 +103,13 @@ pub enum CellNamespace {
     /// Cell line accession number (API value: `cellacc`)
     #[default]
     CellAcc,
-    /// Cell line synonym (API value: `synonim`)
-    Synonim,
+    /// Cell line synonym (API value: `synonym`)
+    Synonym,
 }
 
 impl_enum_str!(CellNamespace {
     CellAcc => "cellacc",
-    Synonim => "synonim",
+    Synonym => "synonym",
 });
 
 impl From<CellNamespace> for Namespace {
@@ -152,8 +152,8 @@ mod tests {
             ProteinNamespace::GI
         );
         assert_eq!(
-            ProteinNamespace::from_str("synonim").unwrap(),
-            ProteinNamespace::Synonim
+            ProteinNamespace::from_str("synonym").unwrap(),
+            ProteinNamespace::Synonym
         );
     }
 
@@ -174,8 +174,8 @@ mod tests {
             TaxonomyNamespace::TaxID
         );
         assert_eq!(
-            TaxonomyNamespace::from_str("synonim").unwrap(),
-            TaxonomyNamespace::Synonim
+            TaxonomyNamespace::from_str("synonym").unwrap(),
+            TaxonomyNamespace::Synonym
         );
     }
 
@@ -187,8 +187,8 @@ mod tests {
             CellNamespace::CellAcc
         );
         assert_eq!(
-            CellNamespace::from_str("synonim").unwrap(),
-            CellNamespace::Synonim
+            CellNamespace::from_str("synonym").unwrap(),
+            CellNamespace::Synonym
         );
     }
 }

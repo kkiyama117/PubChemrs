@@ -117,8 +117,8 @@ mod tests {
     #[test]
     fn test_parse_xrefs() {
         assert_eq!(
-            SubstanceOperationSpecification::from_str("xrefs/resigtryid").unwrap(),
-            SubstanceOperationSpecification::XRefs(XRefs::from_str("resigtryid").unwrap())
+            SubstanceOperationSpecification::from_str("xrefs/registryid").unwrap(),
+            SubstanceOperationSpecification::XRefs(XRefs::from_str("registryid").unwrap())
         );
     }
 
