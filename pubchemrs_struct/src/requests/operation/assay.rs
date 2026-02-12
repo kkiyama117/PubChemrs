@@ -27,6 +27,8 @@ pub enum AssayOperationSpecification {
     Summary(),
     /// Retrieve classification hierarchy (API value: `classification`)
     Classification(),
+    /// Retrieve date information (API value: `dates`)
+    Dates(),
 }
 
 impl std::fmt::Display for AssayOperationSpecification {
@@ -42,6 +44,7 @@ impl std::fmt::Display for AssayOperationSpecification {
             Self::DoseResponse() => write!(f, "doseresponse/sid"),
             Self::Summary() => write!(f, "summary"),
             Self::Classification() => write!(f, "classification"),
+            Self::Dates() => write!(f, "dates"),
         }
     }
 }
@@ -70,6 +73,7 @@ impl FromStr for AssayOperationSpecification {
                 "doseresponse/sid" => Self::DoseResponse(),
                 "summary" => Self::Summary(),
                 "classification" => Self::Classification(),
+                "dates" => Self::Dates(),
                 _ => Err(crate::error::ParseEnumError::VariantNotFound)?,
             }
         })
@@ -140,6 +144,10 @@ mod tests {
         assert_eq!(
             AssayOperationSpecification::from_str("classification").unwrap(),
             AssayOperationSpecification::Classification()
+        );
+        assert_eq!(
+            AssayOperationSpecification::from_str("dates").unwrap(),
+            AssayOperationSpecification::Dates()
         );
     }
 

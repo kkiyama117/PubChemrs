@@ -27,6 +27,8 @@ pub enum SubstanceOperationSpecification {
     XRefs(XRefs),
     /// Retrieve substance description (API value: `description`)
     Description(),
+    /// Retrieve date information (API value: `dates`)
+    Dates(),
 }
 
 impl std::fmt::Display for SubstanceOperationSpecification {
@@ -41,6 +43,7 @@ impl std::fmt::Display for SubstanceOperationSpecification {
             Self::Classification() => write!(f, "classification"),
             Self::XRefs(x) => write!(f, "xrefs/{}", x),
             Self::Description() => write!(f, "description"),
+            Self::Dates() => write!(f, "dates"),
         }
     }
 }
@@ -68,6 +71,7 @@ impl FromStr for SubstanceOperationSpecification {
                 "assaysummary" => Self::AssaySummary(),
                 "classification" => Self::Classification(),
                 "description" => Self::Description(),
+                "dates" => Self::Dates(),
                 _ => Err(crate::error::ParseEnumError::VariantNotFound)?,
             }
         })
@@ -111,6 +115,10 @@ mod tests {
         assert_eq!(
             SubstanceOperationSpecification::from_str("description").unwrap(),
             SubstanceOperationSpecification::Description()
+        );
+        assert_eq!(
+            SubstanceOperationSpecification::from_str("dates").unwrap(),
+            SubstanceOperationSpecification::Dates()
         );
     }
 

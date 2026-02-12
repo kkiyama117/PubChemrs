@@ -47,6 +47,10 @@ use crate::error::{Error, Result};
 /// terminal method (e.g. [`molecular_formula`](Self::molecular_formula),
 /// [`properties`](Self::properties)) which performs the actual HTTP request.
 ///
+/// Terminal methods clone `identifiers` for each call so that a single
+/// `CompoundQuery` can be reused for multiple sequential requests without
+/// being consumed.
+///
 /// # Examples
 ///
 /// ```rust,no_run

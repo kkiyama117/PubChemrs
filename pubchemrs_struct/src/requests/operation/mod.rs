@@ -73,6 +73,11 @@ impl UrlParts for Operation {
     }
 }
 
+/// Parses an operation string without domain context.
+///
+/// When a string matches multiple domain-specific operations (e.g., "record"
+/// exists in compound, substance, and assay), the compound variant is
+/// preferred. Use [`Operation::from_str_with_domain`] for unambiguous parsing.
 impl FromStr for Operation {
     type Err = crate::error::ParseEnumError;
 
@@ -142,7 +147,8 @@ impl Operation {
                     DomainOtherInputs::SourcesSubstances | DomainOtherInputs::SourcesAssays => {
                         Ok(Self::OtherInput())
                     }
-                    // TODO: Check each `other inputs`
+                    // TODO: Validate operation compatibility for each DomainOtherInputs variant
+                    // (e.g. Conformers, Annotations, Classification may have restricted operations)
                     _ => Self::from_str(s_ref).map_err(|e| e.into()),
                 }
             }

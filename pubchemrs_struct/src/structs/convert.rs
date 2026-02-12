@@ -20,10 +20,9 @@ fn parse_coords(compound: &Compound) -> PubChemResult<Option<HashMap<u32, Coordi
         None => return Ok(None),
     };
     let coord_ids = &first_one.aid;
-    let first_coord = first_one
-        .conformers
-        .first()
-        .ok_or(PubChemError::Unknown)?;
+    let first_coord = first_one.conformers.first().ok_or(
+        PubChemError::ParseResponseError("No conformer data found in coordinate record".into()),
+    )?;
     let xs = &first_coord.x;
     let ys = &first_coord.y;
     let zs = &first_coord.z;
@@ -84,48 +83,19 @@ impl TryFrom<&Compound> for Vec<Atom> {
                     .collect()
             })
             .unwrap_or_default();
-        // Zip atom IDs with element IDs and optional coordinates
-        let a: HashMap<u32, (u32, Option<Coordinate>)> = match coordinates {
-            Some(coordinate_data) => aids
-                .iter()
-                .zip_longest(element_ids.iter())
-                .map(|pair| match pair {
-                    itertools::EitherOrBoth::Both(aid, element_id) => {
-                        Ok((*aid, (*element_id, coordinate_data.get(aid).copied())))
-                    }
-                    _ => Err(PubChemError::ParseResponseError(
-                        "Atom aids and elements length mismatch".into(),
-                    )),
-                })
-                .process_results(|pair_iter| pair_iter.collect())?,
-            None => aids
-                .iter()
-                .zip_longest(element_ids.iter())
-                .map(|pair| match pair {
-                    itertools::EitherOrBoth::Both(aid, element_id) => {
-                        Ok((*aid, (*element_id, None)))
-                    }
-                    _ => Err(PubChemError::ParseResponseError(
-                        "Atom aids and elements length mismatch".into(),
-                    )),
-                })
-                .process_results(|pair_iter| pair_iter.collect())?,
-        };
-        // Convert element IDs to Element enum
-        let atoms: HashMap<u32, _> = a
+        // Zip atom IDs with element IDs, convert to Atom directly
+        let atoms: Vec<Atom> = aids
             .iter()
-            .map(|(key, (element_id, coordinate_op))| {
-                Element::try_from(*element_id as u8).map(|element| (*key, (element, coordinate_op)))
+            .zip(element_ids.iter())
+            .map(|(aid, element_id)| {
+                let element = Element::try_from(*element_id as u8)?;
+                let coord = coordinates
+                    .as_ref()
+                    .and_then(|c| c.get(aid).copied());
+                let charge = charges.get(aid).copied().unwrap_or(0);
+                Ok(Atom::from_record_data(*aid, element, coord, charge))
             })
-            .process_results(|inner_iter| inner_iter.collect())?;
-        let atoms = atoms
-            .into_iter()
-            .map(|(aid, (element, coord))| {
-                let charge = charges.get(&aid).copied().unwrap_or(0);
-                Atom::from_record_data(aid, element, *coord, charge)
-            })
-            .sorted_by(|a, b| a.aid.cmp(&b.aid))
-            .collect();
+            .collect::<PubChemResult<Vec<_>>>()?;
 
         Ok(atoms)
     }
@@ -150,7 +120,15 @@ impl TryFrom<&Compound> for Option<Vec<Bond>> {
         });
 
         if aid1s.len() != aid2s.len() || aid2s.len() != orders.len() {
-            return Err(PubChemError::Unknown);
+            return Err(PubChemError::ParseResponseError(
+                format!(
+                    "Bond array length mismatch: aid1={}, aid2={}, order={}",
+                    aid1s.len(),
+                    aid2s.len(),
+                    orders.len()
+                )
+                .into(),
+            ));
         }
 
         let bonds: Result<Vec<Bond>, PubChemError> =
