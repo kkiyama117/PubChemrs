@@ -151,8 +151,8 @@ mod tests {
     #[test]
     fn test_parse_xrefs() {
         assert_eq!(
-            CompoundOperationSpecification::from_str("xrefs/resigtryid").unwrap(),
-            CompoundOperationSpecification::XRefs(XRefs::from_str("resigtryid").unwrap())
+            CompoundOperationSpecification::from_str("xrefs/registryid").unwrap(),
+            CompoundOperationSpecification::XRefs(XRefs::from_str("registryid").unwrap())
         );
     }
 
@@ -180,9 +180,9 @@ mod tests {
             "property/MolecularFormula"
         );
         assert_eq!(
-            CompoundOperationSpecification::XRefs(XRefs::from_str("resigtryid").unwrap())
+            CompoundOperationSpecification::XRefs(XRefs::from_str("registryid").unwrap())
                 .to_string(),
-            "xrefs/resigtryid"
+            "xrefs/registryid"
         );
     }
 
