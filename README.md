@@ -12,6 +12,7 @@ Async Rust client for the [PubChem PUG REST API](https://pubchem.ncbi.nlm.nih.go
 - **Async HTTP client** — Built on `reqwest` + `tokio` with connection pooling, automatic retry on 429/503/504, and linear backoff.
 - **Automatic GET/POST selection** — Searches by InChI, SMILES, SDF, or Formula automatically use POST.
 - **Comprehensive API coverage** — Compound, Substance, Assay, Gene, Protein, Pathway, Taxonomy, and Cell domains.
+- **Structural type conversions** — `TryFrom<&Compound>` for `Vec<Atom>` and `Option<Vec<Bond>>` to extract structured atom/bond data from raw API responses.
 - **Ergonomic convenience API** — `CompoundQuery` and `OtherInputsQuery` builders for common queries.
 - **Optional Python bindings** — Enable `pyo3` feature for `#[pyclass]` derives on all major types.
 

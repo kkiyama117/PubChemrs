@@ -15,6 +15,7 @@ Pure type definitions and URL builder with zero runtime dependencies beyond serd
 - Request types: `InputSpecification`, `Domain`, `Namespace`, `Identifiers`, `Operation`, `OutputFormat`, `UrlBuilder`
 - Response types: `PubChemResponse`, `Compound`, `CompoundProperties`, `PubChemInformation`
 - Structural types: `Atom`, `Bond`, `Compound`, `Classification` (higher-level types for converting raw API arrays)
+- Structural conversions (`structs/convert.rs`): `TryFrom<&Compound>` for `Vec<Atom>` and `Option<Vec<Bond>>`
 - Error types: `PubChemError`, `ErrString`
 - Macros: `impl_enum_str!`, `impl_from_repr!`, `impl_variant_array!`
 
@@ -45,7 +46,8 @@ The pipeline consists of these steps:
    - POST is used for Formula, InChI, SMILES, SDF searches
 
 2. **`Operation`** (`pubchemrs_struct/src/requests/operation/`)
-   - What to fetch: Record, Property, Synonyms, Xrefs, etc.
+   - What to fetch: Record, Property, Synonyms, XRefs, Dates, etc.
+   - Domain-specific operation enums: `CompoundOperationSpecification` (`compound.rs`), `SubstanceOperationSpecification` (`substance.rs`), `AssayOperationSpecification` (`assay.rs`), and simpler domain operations (`simple.rs`)
    - `CompoundProperty` holds a list of property tags
 
 3. **`OutputFormat`** (`pubchemrs_struct/src/requests/output.rs`)
@@ -96,6 +98,13 @@ All fields except `cid` are `Option<T>` — unrequested properties deserialize a
 ### `Compound`
 
 Full compound record (`pubchemrs_struct/src/response/compound/`) with atoms, bonds, coordinates, and conformers. Structural types in `pubchemrs_struct/src/structs/` provide higher-level representations.
+
+### Structural Type Conversions
+
+`pubchemrs_struct/src/structs/convert.rs` implements `TryFrom<&Compound>` conversions for extracting structured data from raw API responses:
+
+- **`TryFrom<&Compound> for Vec<Atom>`** — Extracts atom IDs, elements, coordinates (2D/3D), and charges into `Atom` structs.
+- **`TryFrom<&Compound> for Option<Vec<Bond>>`** — Extracts bond pairs, orders, and style annotations into `Bond` structs. Returns `None` if no bond data is present. Bonds are sorted by `(aid1, aid2)` and style annotations from conformer data are applied. `Bond::is_same_bond_with_aid()` uses bidirectional matching.
 
 ## Key Patterns
 

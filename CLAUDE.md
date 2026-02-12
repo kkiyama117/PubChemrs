@@ -45,7 +45,7 @@ cargo clippy
 URL construction follows the PubChem PUG REST pattern: `/{domain}/{namespace}/{identifiers}/{operation}/{output}`.
 
 1. **`InputSpecification`** (`pubchemrs_struct/src/requests/input/`) — Combines `Domain`, `Namespace`, and `Identifiers`. Validates input and determines GET vs POST (POST used for formula, InChI, SMILES, SDF searches).
-2. **`Operation`** (`pubchemrs_struct/src/requests/operation/`) — What to fetch: Record, Property, Synonyms, Xrefs, etc.
+2. **`Operation`** (`pubchemrs_struct/src/requests/operation/`) — What to fetch: Record, Property, Synonyms, XRefs, Dates, etc. Domain-specific operation enums live in separate files (`compound.rs`, `substance.rs`, `assay.rs`, `simple.rs`).
 3. **`OutputFormat`** (`pubchemrs_struct/src/requests/output.rs`) — JSON, SDF, etc.
 4. **`UrlBuilder`** (`pubchemrs_struct/src/requests/url_builder.rs`) — Assembles all parts into URL path segments + optional POST body via `build_url_parts()`.
 5. **`PubChemClient`** (`pubchemrs_tokio/src/client.rs`) — Executes the request with retry logic (linear backoff, retries on 429/503/504).
@@ -56,7 +56,7 @@ URL construction follows the PubChem PUG REST pattern: `/{domain}/{namespace}/{i
 - **`PubChemResponse`** (`pubchemrs_struct/src/response/mod.rs`) — Root enum dispatching to `Compounds`, `InformationList`, `Fault`, etc.
 - **`CompoundProperties`** (`pubchemrs_struct/src/properties.rs`) — Strongly-typed property struct with custom deserializer for string-to-f64 coercion (`MolecularWeight`, `ExactMass`, `MonoisotopicMass` arrive as JSON strings).
 - **`Compound`** (`pubchemrs_struct/src/response/compound/`) — Full compound record with atoms, bonds, coordinates, conformers.
-- **Structural types** (`pubchemrs_struct/src/structs/`) — Higher-level types (Atom, Bond, Compound, Classification) for converting raw API arrays into usable structs.
+- **Structural types** (`pubchemrs_struct/src/structs/`) — Higher-level types (Atom, Bond, Compound, Classification) for converting raw API arrays into usable structs. `structs/convert.rs` implements `TryFrom<&Compound>` for `Vec<Atom>` and `Option<Vec<Bond>>`.
 
 ### Key Patterns
 
