@@ -1,19 +1,30 @@
+//! Output format specification for PubChem API responses.
+
 use crate::requests::common::UrlParts;
 use std::fmt::Display;
 use std::str::FromStr;
 
-/// Output format for API responses
+/// Output format for API responses.
 #[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass)]
 pub enum OutputFormat {
+    /// XML format (API value: `XML`)
     XML(),
+    /// ASN.1 text format (API value: `ASNT`)
     ASNT(),
+    /// ASN.1 binary format (API value: `ASNB`)
     ASNB(),
+    /// JSON format (API value: `JSON`). This is the default.
     JSON(),
+    /// JSONP format with callback function name (API value: `JSONP?<callback>`)
     JSONP(String),
+    /// SDF (Structure-Data File) format (API value: `SDF`)
     SDF(),
+    /// CSV format (API value: `CSV`)
     CSV(),
+    /// PNG image format (API value: `PNG`)
     PNG(),
+    /// Plain text format (API value: `TXT`)
     TXT(),
 }
 

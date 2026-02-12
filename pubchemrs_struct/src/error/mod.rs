@@ -1,3 +1,12 @@
+//! Error types for the `pubchemrs_struct` crate.
+//!
+//! This module defines [`PubChemError`], the primary error enum, along with
+//! helper types such as [`ErrString`] and [`ParseEnumError`]. Error behavior
+//! can be controlled via environment variables:
+//!
+//! - `PUBCHEM_PANIC_ON_ERR=1` — panic instead of returning errors.
+//! - `PUBCHEM_BACKTRACE_IN_ERR=1` — capture a backtrace in error messages.
+
 mod err_string;
 
 pub use err_string::ErrString;
@@ -21,26 +30,35 @@ static ERROR_STRATEGY: LazyLock<ErrorStrategy> = LazyLock::new(|| {
     }
 });
 
+/// A type alias for `Result<T, PubChemError>`.
 pub type PubChemResult<T> = std::result::Result<T, PubChemError>;
 
-/// Error for enum parsing failures, replaces strum::ParseError.
+/// Error returned when parsing a string into an enum variant fails.
+///
+/// This replaces `strum::ParseError` to avoid a dependency on the `strum` crate.
 #[derive(Debug, Clone, PartialEq, Eq, Error)]
 pub enum ParseEnumError {
+    /// No enum variant matched the input string.
     #[error("Matching variant not found")]
     VariantNotFound,
 }
 
+/// The primary error type for `pubchemrs_struct` operations.
 #[derive(Debug, Error)]
 pub enum PubChemError {
+    /// The request input was invalid (e.g., empty identifiers, unsupported namespace).
     #[error("Invalid Request: {0}")]
     InvalidInput(ErrString),
 
+    /// Failed to parse a PubChem API response.
     #[error("Parse Error: {0}")]
     ParseResponseError(ErrString),
 
+    /// An enum variant could not be parsed from a string.
     #[error(transparent)]
     ParseEnum(#[from] ParseEnumError),
 
+    /// An unknown or unclassified error occurred.
     #[error("Unknown Error")]
     Unknown,
 }

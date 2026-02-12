@@ -2,17 +2,22 @@ use crate::requests::{common::UrlParts, input::Namespace};
 use std::fmt::Display;
 use std::str::FromStr;
 
+/// Namespace for the assay domain, specifying how to look up bioassays.
 #[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass)]
 pub enum AssayNamespace {
+    /// PubChem Assay ID (API value: `aid`)
     Aid(),
+    /// Async list key for paginated results (API value: `listkey`)
     ListKey(),
+    /// Filter by assay type (API path: `type/<type>`)
     Type(AssayType),
-    /// Source Name is `any valid PubChem depositor name`
+    /// Search all sources by depositor name (API path: `sourceall/<name>`)
     SourceAll(String),
+    /// Filter by assay target (API path: `target/<target>`)
     Target(AssayTarget),
-    /// Put an argument as Activity Column Name
+    /// Filter by activity column name (API path: `activity/<name>`)
     Activity(String),
 }
 
@@ -83,23 +88,37 @@ impl FromStr for AssayNamespace {
     }
 }
 
+/// Bioassay type filter for assay namespace queries.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass)]
 pub enum AssayType {
+    /// All assay types (API value: `all`)
     #[default]
     All,
+    /// Confirmatory assays (API value: `confirmatory`)
     Confirmatory,
+    /// Dose-response assays (API value: `doseresponse`)
     Doseresponse,
+    /// On-hold assays (API value: `onhold`)
     OnHold,
+    /// Panel assays (API value: `panel`)
     Panel,
+    /// RNAi assays (API value: `rnai`)
     Rnai,
+    /// Screening assays (API value: `screening`)
     Screening,
+    /// Summary assays (API value: `summary`)
     Summary,
+    /// Cell-based assays (API value: `cellbased`)
     CellBased,
+    /// Biochemical assays (API value: `biochemical`)
     Biochemical,
+    /// In vivo assays (API value: `invivo`)
     Invivo,
+    /// In vitro assays (API value: `invitro`)
     Invitro,
+    /// Assays with specified active concentration (API value: `activeconcentrationspecified`)
     ActiveConcentrationSpecified,
 }
 
@@ -119,15 +138,21 @@ impl_enum_str!(AssayType {
     ActiveConcentrationSpecified => "activeconcentrationspecified",
 });
 
+/// Assay target type for filtering assays by their biological target.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass)]
 pub enum AssayTarget {
+    /// NCBI protein GI number (API value: `gi`)
     #[default]
     Gi,
+    /// Protein name (API value: `proteinname`)
     ProteinName,
+    /// NCBI gene ID (API value: `geneid`)
     GeneID,
+    /// Gene symbol (API value: `genesymbol`)
     GeneSymbol,
+    /// GenBank/RefSeq accession (API value: `accession`)
     Accession,
 }
 

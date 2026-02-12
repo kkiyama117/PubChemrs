@@ -1,15 +1,23 @@
-/// Compound record type.
+/// Compound record type indicating how the compound was processed.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "UPPERCASE")]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass)]
 pub enum CompoundIdType {
+    /// As deposited by the submitter.
     Deposited = 0,
+    /// Standardized form.
     Standardized = 1,
+    /// Component of a mixture.
     Component = 2,
+    /// Neutralized form.
     Neutralized = 3,
+    /// Mixture record.
     Mixture = 4,
+    /// Tautomeric form.
     Tautomer = 5,
+    /// Ionized form.
     Ionized = 6,
+    /// Unknown record type.
     Unknown = 255,
 }
 
@@ -24,31 +32,46 @@ impl_enum_str!(CompoundIdType {
     Unknown => "UNKNOWN",
 });
 
-/// Coordinate Set Type Distinctions (response version).
+/// Coordinate set type flags as returned in PubChem responses.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass)]
 pub enum ResponseCoordinateType {
+    /// Two-dimensional coordinates.
     #[serde(rename = "TWOD")]
     TwoD = 1,
+    /// Three-dimensional coordinates.
     #[serde(rename = "THREED")]
     ThreeD = 2,
+    /// Submitted by the depositor.
     Submitted = 3,
+    /// Experimentally determined.
     Experimental = 4,
+    /// Computationally generated.
     Computed = 5,
+    /// Standardized coordinates.
     Standardized = 6,
+    /// Augmented coordinates.
     Augmented = 7,
+    /// Aligned coordinates.
     Aligned = 8,
+    /// Compact representation.
     Compact = 9,
+    /// Units in angstroms.
     #[serde(rename = "UNITS_ANGSTROMS")]
     UnitsAngstroms = 10,
+    /// Units in nanometers.
     #[serde(rename = "UNITS_NANOMETERS")]
     UnitsNanometers = 11,
+    /// Units in pixels.
     #[serde(rename = "UNITS_PIXEL")]
     UnitsPixel = 12,
+    /// Units in points.
     #[serde(rename = "UNITS_POINTS")]
     UnitsPoints = 13,
+    /// Units in standard bond lengths.
     #[serde(rename = "UNITS_STDBONDS")]
     UnitsStdbonds = 14,
+    /// Unknown units.
     #[serde(rename = "UNITS_UNKNOWN")]
     UnitsUnknown = 255,
 }
@@ -71,30 +94,41 @@ impl_enum_str!(ResponseCoordinateType {
     UnitsUnknown => "UNITS_UNKNOWN",
 });
 
-/// Project Category Distinctions.
+/// BioAssay project category.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass)]
 pub enum ProjectCategory {
+    /// Molecular Libraries Screening Center Network.
     #[serde(rename = "MLSCN")]
     Mlscn = 1,
+    /// Molecular Libraries Probe Centers Network.
     #[serde(rename = "MLPCN")]
     Mlpcn = 2,
+    /// MLSCN assay provider.
     #[serde(rename = "MLSCN_AP")]
     MlscnAp = 3,
+    /// MLPCN assay provider.
     #[serde(rename = "MLPCN_AP")]
     MlpcnAp = 4,
+    /// Journal article.
     #[serde(rename = "JOURNAL_ARTICLE")]
     JournalArticle = 5,
+    /// Assay vendor.
     #[serde(rename = "ASSAY_VENDOR")]
     AssayVendor = 6,
+    /// Literature-extracted data.
     #[serde(rename = "LITERATURE_EXTRACTED")]
     LiteratureExtracted = 7,
+    /// Literature author-submitted.
     #[serde(rename = "LITERATURE_AUTHOR")]
     LiteratureAuthor = 8,
+    /// Literature publisher-submitted.
     #[serde(rename = "LITERATURE_PUBLISHER")]
     LiteraturePublisher = 9,
+    /// RNAi Global Initiative.
     #[serde(rename = "RNAIGI")]
     Rnaigi = 10,
+    /// Other / uncategorized.
     #[serde(rename = "OTHER")]
     Other = 255,
 }

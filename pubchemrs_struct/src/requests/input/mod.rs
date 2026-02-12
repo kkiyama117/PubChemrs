@@ -1,3 +1,8 @@
+//! Input specification types for PubChem API requests.
+//!
+//! Combines domain, namespace, and identifiers to form the input portion
+//! of a PUG REST URL.
+
 mod domain;
 mod identifiers;
 mod namespace;
@@ -10,17 +15,21 @@ use std::{borrow::Cow, str::FromStr};
 use crate::error::{PubChemError, PubChemResult};
 use crate::requests::common::UrlParts;
 
-/// API  Input specifications
+/// Input specification combining domain, namespace, and identifiers for a PubChem API request.
 #[derive(Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass)]
 pub struct InputSpecification {
+    /// The data domain to query (e.g., compound, substance, assay).
     pub domain: Domain,
+    /// The namespace that determines how identifiers are interpreted.
     pub namespace: Namespace,
+    /// The identifier values used to look up records.
     pub identifiers: Identifiers,
 }
 
 impl InputSpecification {
+    /// Creates a new `InputSpecification` by parsing domain and namespace from strings.
     pub fn new<'a, D: Into<Cow<'a, str>>, N: Into<Cow<'a, str>>, I: Into<Identifiers>>(
         domain: D,
         namespace: N,

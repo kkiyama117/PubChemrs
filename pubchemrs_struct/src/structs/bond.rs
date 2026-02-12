@@ -1,18 +1,23 @@
 use crate::error::PubChemError;
 
-/// Represents a bond between two atoms.
+/// A chemical bond between two atoms.
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass)]
 pub struct Bond {
+    /// Atom ID of the first bonded atom.
     pub aid1: u32,
+    /// Atom ID of the second bonded atom.
     pub aid2: u32,
+    /// Bond type (single, double, triple, etc.).
     pub order: BondType,
+    /// Optional display style annotation (e.g. wedge/dash for stereo).
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default)]
     pub style: Option<u32>,
 }
 
 impl Bond {
+    /// Creates a new bond between two atoms with the given order and optional style.
     pub fn new(aid1: u32, aid2: u32, order: Option<BondType>, style: Option<u32>) -> Self {
         Self {
             aid1,
@@ -22,14 +27,17 @@ impl Bond {
         }
     }
 
+    /// Sets the display style annotation for this bond.
     pub fn set_style(&mut self, style: Option<u32>) {
         self.style = style;
     }
 
+    /// Returns `true` if this bond connects the same pair of atoms as `other`.
     pub fn is_same_bond(&self, other: &Self) -> bool {
         (self.aid1 == other.aid1) && (self.aid2 == other.aid2)
     }
 
+    /// Returns `true` if this bond connects the given atom ID pair.
     pub fn is_same_bond_with_aid(&self, aid1: u32, aid2: u32) -> bool {
         (self.aid1 == aid1) && (self.aid2 == aid2)
     }
@@ -41,21 +49,29 @@ impl std::fmt::Display for Bond {
     }
 }
 
-/// Bond Type Information.
+/// Chemical bond type / order.
 #[derive(
     Copy, Clone, Debug, Default, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize,
 )]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass)]
 #[repr(u8)]
 pub enum BondType {
+    /// Single bond.
     #[default]
     Single = 1,
+    /// Double bond.
     Double = 2,
+    /// Triple bond.
     Triple = 3,
+    /// Quadruple bond.
     Quadruple = 4,
+    /// Dative (coordinate) bond.
     Dative = 5,
+    /// Complex bond.
     Complex = 6,
+    /// Ionic bond.
     Ionic = 7,
+    /// Unknown bond type.
     Unknown = 255,
 }
 

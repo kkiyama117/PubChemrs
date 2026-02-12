@@ -1,7 +1,18 @@
+//! Raw compound record types deserialized directly from the PubChem API.
+//!
+//! These mirror the JSON structure of PubChem `PC_Compounds` responses.
+//! Use [`Compound::setup_atoms`] and [`Compound::setup_bonds`] to convert
+//! the raw arrays into higher-level [`crate::structs`] types.
+
+/// Raw atom data arrays.
 pub mod atom;
+/// Raw bond data arrays.
 pub mod bond;
+/// Conformer coordinate data.
 pub mod conformer;
+/// Coordinate set wrapper.
 pub mod coordinate;
+/// Properties, counts, and stereochemistry.
 pub mod others;
 
 use std::collections::HashMap;
@@ -15,7 +26,7 @@ use self::others::*;
 use crate::error::*;
 use crate::structs::Element;
 
-/// TODO: Implement `as_dataframe`
+/// A collection of compound records.
 pub type Compounds = Vec<Compound>;
 
 /// Represents a chemical compound with its properties.
@@ -31,11 +42,16 @@ pub struct Compound {
     pub bonds: Option<BondInner>,
     /// The total (or net) charge of a molecule.
     pub charge: i32,
+    /// Coordinate sets for atom positions.
     pub coords: Vec<CoordsInner>,
+    /// Counts of various structural features (chiral atoms, heavy atoms, etc.).
     pub count: CompoundTCount,
+    /// Compound identifier (CID).
     #[serde(rename = "id")]
     pub cid: Option<CompoundID>,
+    /// Compound property key-value pairs.
     pub props: Vec<CompoundProps>,
+    /// Stereochemistry annotations, if present.
     pub stereo: Option<Vec<Stereo>>,
 }
 
@@ -245,12 +261,17 @@ impl Compound {
     }
 }
 
+/// Compound identifier wrapper as returned in the raw API response.
 #[derive(Debug, Clone, PartialEq, Eq, Copy, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass)]
 #[repr(u32)]
 pub enum CompoundID {
+    /// PubChem Compound ID (CID).
     #[serde(rename = "id")]
-    Cid { cid: u32 },
+    Cid {
+        /// The numeric CID value.
+        cid: u32,
+    },
 }
 
 impl PartialEq<crate::structs::CompoundID> for CompoundID {

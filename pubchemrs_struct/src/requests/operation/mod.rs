@@ -1,3 +1,5 @@
+//! Operation types specifying what action to perform on matched PubChem records.
+
 mod property;
 mod xrefs;
 
@@ -10,20 +12,28 @@ use crate::requests::common::UrlParts;
 use crate::requests::input::DomainOtherInputs;
 use crate::{error::PubChemResult, requests::input::Domain};
 
-/// API operation (what to do with the data)
-/// TODO: Check implementation
+/// API operation specifying what to do with matched PubChem records.
 #[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase", untagged)]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass)]
 pub enum Operation {
+    /// Operation for the compound domain.
     Compound(CompoundOperationSpecification),
+    /// Operation for the substance domain.
     Substance(SubstanceOperationSpecification),
+    /// Operation for the assay domain.
     Assay(AssayOperationSpecification),
+    /// Operation for the gene domain.
     Gene(GeneOperationSpecification),
+    /// Operation for the protein domain.
     Protein(ProteinOperationSpecification),
+    /// Operation for the pathway domain.
     PathWay(PathWayOperationSpecification),
+    /// Operation for the taxonomy domain.
     Taxonomy(TaxonomyOperationSpecification),
+    /// Operation for the cell line domain.
     Cell(CellOperationSpecification),
+    /// No operation, used for `DomainOtherInputs` domains.
     OtherInput(),
 }
 
@@ -74,6 +84,7 @@ impl FromStr for Operation {
 }
 
 impl Operation {
+    /// Returns the default operation for the given domain.
     pub fn default_with_domain(domain: &Domain) -> Self {
         match domain {
             Domain::Compound() => CompoundOperationSpecification::default().into(),
@@ -88,6 +99,7 @@ impl Operation {
         }
     }
 
+    /// Parses an operation string in the context of a specific domain.
     pub fn from_str_with_domain<'a, S>(domain: &Domain, s: S) -> PubChemResult<Self>
     where
         S: Into<Cow<'a, str>>,
@@ -181,26 +193,34 @@ impl From<CellOperationSpecification> for Operation {
     }
 }
 
-/// API operation (what to do with the data)
+/// Operations available for the compound domain.
 #[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass)]
 pub enum CompoundOperationSpecification {
-    /// Get record. This is default operation at now.
+    /// Retrieve the full compound record (API value: `record`). This is the default.
     Record(),
-    /// Retrieve compound information
+    /// Retrieve specific compound properties (API path: `property/<tags>`)
     Property(CompoundProperty),
+    /// Retrieve compound synonyms (API value: `synonyms`)
     Synonyms(),
+    /// Retrieve associated substance IDs (API value: `sids`)
     Sids(),
+    /// Retrieve compound IDs (API value: `cids`)
     Cids(),
+    /// Retrieve associated assay IDs (API value: `aids`)
     Aids(),
+    /// Retrieve assay summary (API value: `assaysummary`)
     AssaySummary(),
+    /// Retrieve classification hierarchy (API value: `classification`)
     Classification(),
+    /// Retrieve cross-references (API path: `xrefs/<types>`)
     XRefs(XRefs),
-    /// Get compound description
+    /// Retrieve compound description (API value: `description`)
     Description(),
+    /// Retrieve 3D conformers (API value: `conformers`)
     Conformers(),
-    /// For source search
+    /// No operation, used for source searches.
     None(),
 }
 
@@ -257,21 +277,28 @@ impl FromStr for CompoundOperationSpecification {
     }
 }
 
-/// API operation (what to do with the data)
+/// Operations available for the substance domain.
 #[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass)]
 pub enum SubstanceOperationSpecification {
-    /// Get record. This is default operation at now.
+    /// Retrieve the full substance record (API value: `record`). This is the default.
     Record(),
+    /// Retrieve substance synonyms (API value: `synonyms`)
     Synonyms(),
+    /// Retrieve substance IDs (API value: `sids`)
     Sids(),
+    /// Retrieve associated compound IDs (API value: `cids`)
     Cids(),
+    /// Retrieve associated assay IDs (API value: `aids`)
     Aids(),
+    /// Retrieve assay summary (API value: `assaysummary`)
     AssaySummary(),
+    /// Retrieve classification hierarchy (API value: `classification`)
     Classification(),
+    /// Retrieve cross-references (API path: `xrefs/<types>`)
     XRefs(XRefs),
-    /// Get compound description
+    /// Retrieve substance description (API value: `description`)
     Description(),
 }
 
@@ -321,21 +348,30 @@ impl FromStr for SubstanceOperationSpecification {
     }
 }
 
-/// API operation (what to do with the data)
+/// Operations available for the assay domain.
 #[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass)]
 pub enum AssayOperationSpecification {
-    /// Get record. This is default operation at now.
+    /// Retrieve the full assay record (API value: `record`). This is the default.
     Record(),
+    /// Retrieve concise assay data (API value: `concise`)
     Concise(),
+    /// Retrieve assay IDs (API value: `aids`)
     Aids(),
+    /// Retrieve associated compound IDs (API value: `cids`)
     Cids(),
+    /// Retrieve associated substance IDs (API value: `sids`)
     Sids(),
+    /// Retrieve assay description (API value: `description`)
     Description(),
+    /// Retrieve assay targets by type (API path: `targets/<type>`)
     Targets(AssayOperationTargetType),
+    /// Retrieve dose-response data (API value: `doseresponse/sid`)
     DoseResponse(),
+    /// Retrieve assay summary (API value: `summary`)
     Summary(),
+    /// Retrieve classification hierarchy (API value: `classification`)
     Classification(),
 }
 
@@ -387,14 +423,19 @@ impl FromStr for AssayOperationSpecification {
     }
 }
 
+/// Target type for assay target retrieval operations.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass)]
 pub enum AssayOperationTargetType {
+    /// Protein GI number (API value: `proteingi`)
     #[default]
     ProteinGI,
+    /// Protein name (API value: `proteinname`)
     ProteinName,
+    /// NCBI gene ID (API value: `geneid`)
     GeneID,
+    /// Gene symbol (API value: `genesymbol`)
     GeneSymbol,
 }
 
@@ -405,14 +446,19 @@ impl_enum_str!(AssayOperationTargetType {
     GeneSymbol => "genesymbol",
 });
 
+/// Operations available for the gene domain.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass)]
 pub enum GeneOperationSpecification {
+    /// Retrieve gene summary (API value: `summary`)
     #[default]
     Summary,
+    /// Retrieve associated assay IDs (API value: `aids`)
     Aids,
+    /// Retrieve concise gene data (API value: `concise`)
     Concise,
+    /// Retrieve pathway accessions (API value: `pwaccs`)
     Pwaccs,
 }
 
@@ -423,14 +469,19 @@ impl_enum_str!(GeneOperationSpecification {
     Pwaccs => "pwaccs",
 });
 
+/// Operations available for the protein domain.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass)]
 pub enum ProteinOperationSpecification {
+    /// Retrieve protein summary (API value: `summary`)
     #[default]
     Summary,
+    /// Retrieve associated assay IDs (API value: `aids`)
     Aids,
+    /// Retrieve concise protein data (API value: `concise`)
     Concise,
+    /// Retrieve pathway accessions (API value: `pwaccs`)
     Pwaccs,
 }
 
@@ -441,14 +492,19 @@ impl_enum_str!(ProteinOperationSpecification {
     Pwaccs => "pwaccs",
 });
 
+/// Operations available for the pathway domain.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass)]
 pub enum PathWayOperationSpecification {
+    /// Retrieve pathway summary (API value: `summary`)
     #[default]
     Summary,
+    /// Retrieve associated compound IDs (API value: `cids`)
     Cids,
+    /// Retrieve concise pathway data (API value: `concise`)
     Concise,
+    /// Retrieve pathway accessions (API value: `pwaccs`)
     Pwaccs,
 }
 
@@ -459,12 +515,15 @@ impl_enum_str!(PathWayOperationSpecification {
     Pwaccs => "pwaccs",
 });
 
+/// Operations available for the taxonomy domain.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass)]
 pub enum TaxonomyOperationSpecification {
+    /// Retrieve taxonomy summary (API value: `summary`)
     #[default]
     Summary,
+    /// Retrieve associated assay IDs (API value: `aids`)
     Aids,
 }
 
@@ -473,12 +532,15 @@ impl_enum_str!(TaxonomyOperationSpecification {
     Aids => "aids",
 });
 
+/// Operations available for the cell line domain.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass)]
 pub enum CellOperationSpecification {
+    /// Retrieve cell line summary (API value: `summary`)
     #[default]
     Summary,
+    /// Retrieve associated assay IDs (API value: `aids`)
     Aids,
 }
 
