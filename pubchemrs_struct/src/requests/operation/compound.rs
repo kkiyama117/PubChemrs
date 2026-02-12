@@ -32,6 +32,8 @@ pub enum CompoundOperationSpecification {
     Description(),
     /// Retrieve 3D conformers (API value: `conformers`)
     Conformers(),
+    /// Retrieve date information (API value: `dates`)
+    Dates(),
     /// No operation, used for source searches.
     None(),
 }
@@ -50,6 +52,7 @@ impl std::fmt::Display for CompoundOperationSpecification {
             Self::XRefs(x) => write!(f, "xrefs/{}", x),
             Self::Description() => write!(f, "description"),
             Self::Conformers() => write!(f, "conformers"),
+            Self::Dates() => write!(f, "dates"),
             Self::None() => write!(f, ""),
         }
     }
@@ -82,6 +85,7 @@ impl FromStr for CompoundOperationSpecification {
                 "classification" => Self::Classification(),
                 "description" => Self::Description(),
                 "conformers" => Self::Conformers(),
+                "dates" => Self::Dates(),
                 _ => Err(crate::error::ParseEnumError::VariantNotFound)?,
             }
         })
@@ -129,6 +133,10 @@ mod tests {
         assert_eq!(
             CompoundOperationSpecification::from_str("conformers").unwrap(),
             CompoundOperationSpecification::Conformers()
+        );
+        assert_eq!(
+            CompoundOperationSpecification::from_str("dates").unwrap(),
+            CompoundOperationSpecification::Dates()
         );
     }
 

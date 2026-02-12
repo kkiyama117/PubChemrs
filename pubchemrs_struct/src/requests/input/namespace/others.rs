@@ -12,12 +12,15 @@ pub enum GeneNamespace {
     GeneSymbol,
     /// GenBank/RefSeq accession (API value: `accession`)
     Accession,
+    /// Gene synonym (API value: `synonym`)
+    Synonym,
 }
 
 impl_enum_str!(GeneNamespace {
     GeneID => "geneid",
     GeneSymbol => "genesymbol",
     Accession => "accession",
+    Synonym => "synonym",
 });
 
 impl From<GeneNamespace> for Namespace {
@@ -137,6 +140,10 @@ mod tests {
         assert_eq!(
             GeneNamespace::from_str("accession").unwrap(),
             GeneNamespace::Accession
+        );
+        assert_eq!(
+            GeneNamespace::from_str("synonym").unwrap(),
+            GeneNamespace::Synonym
         );
     }
 

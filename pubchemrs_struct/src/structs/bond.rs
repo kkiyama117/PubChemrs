@@ -33,14 +33,17 @@ impl Bond {
         Self { style, ..self }
     }
 
-    /// Returns `true` if this bond connects the same pair of atoms as `other`.
+    /// Returns `true` if this bond connects the same pair of atoms as `other`,
+    /// regardless of atom ID ordering (bonds are undirected).
     pub fn is_same_bond(&self, other: &Self) -> bool {
-        (self.aid1 == other.aid1) && (self.aid2 == other.aid2)
+        (self.aid1 == other.aid1 && self.aid2 == other.aid2)
+            || (self.aid1 == other.aid2 && self.aid2 == other.aid1)
     }
 
-    /// Returns `true` if this bond connects the given atom ID pair.
+    /// Returns `true` if this bond connects the given atom ID pair,
+    /// regardless of atom ID ordering (bonds are undirected).
     pub fn is_same_bond_with_aid(&self, aid1: u32, aid2: u32) -> bool {
-        (self.aid1 == aid1) && (self.aid2 == aid2)
+        (self.aid1 == aid1 && self.aid2 == aid2) || (self.aid1 == aid2 && self.aid2 == aid1)
     }
 }
 
