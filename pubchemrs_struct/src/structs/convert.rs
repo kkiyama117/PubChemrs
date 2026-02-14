@@ -20,9 +20,12 @@ fn parse_coords(compound: &Compound) -> PubChemResult<Option<HashMap<u32, Coordi
         None => return Ok(None),
     };
     let coord_ids = &first_one.aid;
-    let first_coord = first_one.conformers.first().ok_or(
-        PubChemError::ParseResponseError("No conformer data found in coordinate record".into()),
-    )?;
+    let first_coord = first_one
+        .conformers
+        .first()
+        .ok_or(PubChemError::ParseResponseError(
+            "No conformer data found in coordinate record".into(),
+        ))?;
     let xs = &first_coord.x;
     let ys = &first_coord.y;
     let zs = &first_coord.z;
@@ -39,17 +42,13 @@ fn parse_coords(compound: &Compound) -> PubChemResult<Option<HashMap<u32, Coordi
             Some(zs) => x_ys
                 .zip_longest(zs.iter())
                 .map(|inner| match inner {
-                    itertools::EitherOrBoth::Both((x, y), z) => {
-                        Ok(Coordinate::new(x, y, Some(*z)))
-                    }
+                    itertools::EitherOrBoth::Both((x, y), z) => Ok(Coordinate::new(x, y, Some(*z))),
                     _ => Err(PubChemError::ParseResponseError(
                         "Error parsing atom coordinates".into(),
                     )),
                 })
                 .process_results(|iter| iter.collect()),
-            None => Ok(x_ys
-                .map(|(x, y)| Coordinate::new(x, y, None))
-                .collect()),
+            None => Ok(x_ys.map(|(x, y)| Coordinate::new(x, y, None)).collect()),
         })??;
     let result = coord_ids
         .iter()
@@ -89,9 +88,7 @@ impl TryFrom<&Compound> for Vec<Atom> {
             .zip(element_ids.iter())
             .map(|(aid, element_id)| {
                 let element = Element::try_from(*element_id as u8)?;
-                let coord = coordinates
-                    .as_ref()
-                    .and_then(|c| c.get(aid).copied());
+                let coord = coordinates.as_ref().and_then(|c| c.get(aid).copied());
                 let charge = charges.get(aid).copied().unwrap_or(0);
                 Ok(Atom::from_record_data(*aid, element, coord, charge))
             })

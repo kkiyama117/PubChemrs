@@ -52,6 +52,8 @@ assert!((aspirin.molecular_weight.unwrap() - 180.16).abs() < 0.01);
 | `response` | Raw API response structs (`PubChemResponse`, `Compound`, `InformationList`, `Fault`, etc.) |
 | `structs` | Higher-level types (`Atom`, `Bond`, `Compound`) with `TryFrom` conversions from raw responses |
 
+- `requests` should be same as [`Pubchem API`](https://pubchem.ncbi.nlm.nih.gov/docs/pug-rest#section=The-URL-Path) definition
+
 ## Feature Flags
 
 | Flag | Description |
