@@ -1,9 +1,37 @@
 //! Common traits and types shared across request construction.
 
+use crate::error::{PubChemError, PubChemResult};
+use crate::requests::input::Domain;
+
 /// Trait for types that can produce URL path segments.
 pub trait UrlParts {
     /// Converts this value into a list of URL path segments.
     fn to_url_parts(&self) -> Vec<String>;
+}
+
+/// Trait for types that are only valid with specific PubChem domains.
+pub trait DomainCompatible {
+    /// Returns `true` if this value is compatible with the given domain.
+    fn is_compatible_with_domain(&self, domain: &Domain) -> bool;
+
+    /// Validates compatibility, returning `Err(InvalidInput)` on mismatch.
+    fn validate_with_domain(&self, domain: &Domain) -> PubChemResult<()> {
+        if self.is_compatible_with_domain(domain) {
+            Ok(())
+        } else {
+            Err(PubChemError::InvalidInput(
+                format!(
+                    "{} is not compatible with domain `{}`",
+                    self.type_label(),
+                    domain
+                )
+                .into(),
+            ))
+        }
+    }
+
+    /// Human-readable label for error messages (e.g. "operation `record`").
+    fn type_label(&self) -> String;
 }
 
 /// Cross-reference type for linking PubChem records to external databases.

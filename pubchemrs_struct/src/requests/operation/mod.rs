@@ -16,7 +16,7 @@ pub use simple::*;
 pub use substance::*;
 pub use xrefs::*;
 
-use crate::requests::common::UrlParts;
+use crate::requests::common::{DomainCompatible, UrlParts};
 use crate::requests::input::DomainOtherInputs;
 use crate::{error::PubChemResult, requests::input::Domain};
 
@@ -204,9 +204,89 @@ impl From<CellOperationSpecification> for Operation {
     }
 }
 
+impl DomainCompatible for Operation {
+    fn is_compatible_with_domain(&self, domain: &Domain) -> bool {
+        matches!(
+            (self, domain),
+            (Operation::Compound(_), Domain::Compound())
+                | (Operation::Substance(_), Domain::Substance())
+                | (Operation::Assay(_), Domain::Assay())
+                | (Operation::Gene(_), Domain::Gene())
+                | (Operation::Protein(_), Domain::Protein())
+                | (Operation::PathWay(_), Domain::PathWay())
+                | (Operation::Taxonomy(_), Domain::Taxonomy())
+                | (Operation::Cell(_), Domain::Cell())
+                | (Operation::OtherInput(), Domain::Others(_))
+        )
+    }
+
+    fn type_label(&self) -> String {
+        format!("operation `{self}`")
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::requests::input::DomainOtherInputs;
+
+    #[test]
+    fn test_operation_domain_compatible_valid_pairs() {
+        let valid_pairs: Vec<(Operation, Domain)> = vec![
+            (
+                CompoundOperationSpecification::Record().into(),
+                Domain::Compound(),
+            ),
+            (
+                SubstanceOperationSpecification::Record().into(),
+                Domain::Substance(),
+            ),
+            (
+                AssayOperationSpecification::Record().into(),
+                Domain::Assay(),
+            ),
+            (GeneOperationSpecification::Summary.into(), Domain::Gene()),
+            (
+                ProteinOperationSpecification::Summary.into(),
+                Domain::Protein(),
+            ),
+            (
+                PathWayOperationSpecification::Summary.into(),
+                Domain::PathWay(),
+            ),
+            (
+                TaxonomyOperationSpecification::Summary.into(),
+                Domain::Taxonomy(),
+            ),
+            (CellOperationSpecification::Summary.into(), Domain::Cell()),
+            (
+                Operation::OtherInput(),
+                Domain::Others(DomainOtherInputs::SourcesSubstances),
+            ),
+        ];
+        for (op, domain) in &valid_pairs {
+            assert!(
+                op.is_compatible_with_domain(domain),
+                "expected {op} compatible with {domain}"
+            );
+            assert!(op.validate_with_domain(domain).is_ok());
+        }
+    }
+
+    #[test]
+    fn test_operation_domain_compatible_invalid_pairs() {
+        let compound_op: Operation = CompoundOperationSpecification::Record().into();
+        assert!(!compound_op.is_compatible_with_domain(&Domain::Substance()));
+        assert!(!compound_op.is_compatible_with_domain(&Domain::Assay()));
+        assert!(!compound_op.is_compatible_with_domain(&Domain::Gene()));
+
+        let err = compound_op
+            .validate_with_domain(&Domain::Substance())
+            .unwrap_err();
+        let msg = err.to_string();
+        assert!(msg.contains("not compatible with domain"), "got: {msg}");
+        assert!(msg.contains("substance"), "got: {msg}");
+    }
 
     #[test]
     fn test_operation_from_str() {

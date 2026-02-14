@@ -6,7 +6,8 @@ mod others;
 mod substance;
 use std::str::FromStr;
 
-use crate::requests::common::UrlParts;
+use crate::requests::common::{DomainCompatible, UrlParts};
+use crate::requests::input::Domain;
 pub use assay::*;
 pub use compound::*;
 pub use others::*;
@@ -124,12 +125,73 @@ impl Namespace {
     }
 }
 
+impl DomainCompatible for Namespace {
+    fn is_compatible_with_domain(&self, domain: &Domain) -> bool {
+        matches!(
+            (self, domain),
+            (Namespace::Compound(_), Domain::Compound())
+                | (Namespace::Substance(_), Domain::Substance())
+                | (Namespace::Assay(_), Domain::Assay())
+                | (Namespace::Gene(_), Domain::Gene())
+                | (Namespace::Protein(_), Domain::Protein())
+                | (Namespace::PathWay(_), Domain::PathWay())
+                | (Namespace::Taxonomy(_), Domain::Taxonomy())
+                | (Namespace::Cell(_), Domain::Cell())
+                | (Namespace::None(), Domain::Others(_))
+        )
+    }
+
+    fn type_label(&self) -> String {
+        format!("namespace `{self}`")
+    }
+}
+
 #[cfg(test)]
 mod tests {
 
     use super::*;
+    use crate::requests::input::DomainOtherInputs;
     use std::str::FromStr;
-    // DomainOtherInputs tests
+
+    #[test]
+    fn test_namespace_domain_compatible_valid_pairs() {
+        let valid_pairs: Vec<(Namespace, Domain)> = vec![
+            (CompoundNamespace::Cid().into(), Domain::Compound()),
+            (SubstanceNamespace::Sid().into(), Domain::Substance()),
+            (AssayNamespace::Aid().into(), Domain::Assay()),
+            (GeneNamespace::GeneID.into(), Domain::Gene()),
+            (ProteinNamespace::Accession.into(), Domain::Protein()),
+            (PathWayNamespace::Pwacc.into(), Domain::PathWay()),
+            (TaxonomyNamespace::TaxID.into(), Domain::Taxonomy()),
+            (CellNamespace::CellAcc.into(), Domain::Cell()),
+            (
+                Namespace::None(),
+                Domain::Others(DomainOtherInputs::SourcesSubstances),
+            ),
+        ];
+        for (ns, domain) in &valid_pairs {
+            assert!(
+                ns.is_compatible_with_domain(domain),
+                "expected {ns} compatible with {domain}"
+            );
+            assert!(ns.validate_with_domain(domain).is_ok());
+        }
+    }
+
+    #[test]
+    fn test_namespace_domain_compatible_invalid_pairs() {
+        let compound_ns = Namespace::Compound(CompoundNamespace::Cid());
+        assert!(!compound_ns.is_compatible_with_domain(&Domain::Substance()));
+        assert!(!compound_ns.is_compatible_with_domain(&Domain::Assay()));
+
+        let err = compound_ns
+            .validate_with_domain(&Domain::Substance())
+            .unwrap_err();
+        let msg = err.to_string();
+        assert!(msg.contains("not compatible with domain"), "got: {msg}");
+        assert!(msg.contains("substance"), "got: {msg}");
+    }
+
     #[test]
     fn test_namespace_parse() {
         assert_eq!(
