@@ -35,6 +35,7 @@ impl Default for ClientConfig {
 /// `max_retries` controls how many times a failed request is retried (default: 3).
 /// With `max_retries = 3`, a request may be attempted up to 4 times total
 /// (1 initial + 3 retries). Linear backoff is applied between retries.
+#[derive(Clone)]
 pub struct PubChemClient {
     client: reqwest::Client,
     config: ClientConfig,

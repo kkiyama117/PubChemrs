@@ -3,4 +3,5 @@ resolver = "2"
 members = [
     "pubchemrs_struct",
     "pubchemrs_tokio",
+    "pubchemrs_pyo3",
 ]

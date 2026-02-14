@@ -176,6 +176,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "05f29059c0c2090612e8d742178b0580d2dc940c837851ad723096f87af6663e"
 
 [[package]]
+name = "futures-macro"
+version = "0.3.31"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "162ee34ebcb7c64a8abebc059ce0fee27c2262618d7b60ed8faf72fef13c3650"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "futures-sink"
 version = "0.3.31"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -194,6 +205,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9fa08315bb612088cc391249efdc3bc77536f16c91f6cf495e6fbe85b20a4a81"
 dependencies = [
  "futures-core",
+ "futures-macro",
  "futures-task",
  "pin-project-lite",
  "pin-utils",
@@ -722,6 +734,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "pubchemrs_pyo3"
+version = "0.1.0"
+dependencies = [
+ "pubchemrs_struct",
+ "pubchemrs_tokio",
+ "pyo3",
+ "pyo3-async-runtimes",
+ "serde_json",
+ "tokio",
+]
+
+[[package]]
 name = "pubchemrs_struct"
 version = "0.1.0"
 dependencies = [
@@ -758,6 +782,32 @@ dependencies = [
  "pyo3-build-config",
  "pyo3-ffi",
  "pyo3-macros",
+]
+
+[[package]]
+name = "pyo3-async-runtimes"
+version = "0.28.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9e7364a95bf00e8377bbf9b0f09d7ff9715a29d8fcf93b47d1a967363b973178"
+dependencies = [
+ "futures-channel",
+ "futures-util",
+ "once_cell",
+ "pin-project-lite",
+ "pyo3",
+ "pyo3-async-runtimes-macros",
+ "tokio",
+]
+
+[[package]]
+name = "pyo3-async-runtimes-macros"
+version = "0.28.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c23399970eea9c31d0ac84cee4a9d8dd05f89b1da2f4dd5bb44b32a3f66db4f8"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]

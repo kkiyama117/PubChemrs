@@ -32,7 +32,7 @@ impl PubChemInformationList {
 
 /// A single information record from a PubChem response.
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
+#[cfg_attr(feature = "pyo3", pyo3::pyclass(get_all))]
 pub struct PubChemInformation {
     /// Compound ID, if present.
     #[serde(rename = "CID", default)]
