@@ -2,6 +2,7 @@ use pyo3::prelude::*;
 
 mod client;
 mod error;
+mod legacy;
 
 /// Serialize a Rust Compound to a JSON string matching the PubChem API format.
 ///
@@ -22,6 +23,7 @@ fn _pubchemrs(m: &Bound<'_, PyModule>) -> PyResult<()> {
     error::register_exceptions(m)?;
 
     // Register client class
+    m.add_class::<legacy::CompoundIdType>()?;
     m.add_class::<client::PyPubChemClient>()?;
 
     // Re-export key types from pubchemrs_struct

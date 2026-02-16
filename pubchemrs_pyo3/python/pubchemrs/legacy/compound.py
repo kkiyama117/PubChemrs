@@ -9,6 +9,7 @@ import warnings
 from itertools import zip_longest
 
 from pubchemrs._core import _get_default_client as _rust_client
+from pubchemrs._pubchemrs import CompoundIdType
 from pubchemrs._pubchemrs import PubChemNotFoundError as _RustNotFoundError
 from pubchemrs._pubchemrs import compound_to_json as _compound_to_json
 
@@ -19,27 +20,6 @@ log = logging.getLogger("pubchempy")
 
 #: Type alias for URL query parameters.
 QueryParam = str | int | float | bool | list[str] | None
-
-
-class CompoundIdType(enum.IntEnum):
-    """Compound record type."""
-
-    #: Original Deposited Compound
-    DEPOSITED = 0
-    #: Standardized Form of a Deposited Compound
-    STANDARDIZED = 1
-    #: Component of a Standardized Compound
-    COMPONENT = 2
-    #: Neutralized Form of a Standardized Compound
-    NEUTRALIZED = 3
-    #: Substance that is a component of a mixture
-    MIXTURE = 4
-    #: Predicted Tautomer Form
-    TAUTOMER = 5
-    #: Predicted Ionized pKa Form
-    IONIZED = 6
-    #: Unknown Compound Type
-    UNKNOWN = 255
 
 
 class BondType(enum.IntEnum):
