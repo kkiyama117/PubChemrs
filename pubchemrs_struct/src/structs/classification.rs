@@ -1,7 +1,7 @@
 /// Compound record type indicating how the compound was processed.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "UPPERCASE")]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass(eq, eq_int, from_py_object))]
+#[cfg_attr(feature = "pyo3", pyo3::pyclass(from_py_object))]
 pub enum CompoundIdType {
     /// As deposited by the submitter.
     Deposited = 0,
