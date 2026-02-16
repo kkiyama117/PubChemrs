@@ -57,7 +57,7 @@ impl std::fmt::Display for Bond {
 #[derive(
     Copy, Clone, Debug, Default, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize,
 )]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass(from_py_object))]
+#[cfg_attr(feature = "pyo3", pyo3::pyclass(eq, eq_int, from_py_object))]
 #[repr(u8)]
 pub enum BondType {
     /// Single bond.

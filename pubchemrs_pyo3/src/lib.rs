@@ -29,6 +29,11 @@ fn _pubchemrs(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<pubchemrs_struct::response::Compound>()?;
     m.add_class::<pubchemrs_struct::response::PubChemInformation>()?;
 
+    // Register Rust enum types (with eq_int for IntEnum interop)
+    m.add_class::<pubchemrs_struct::structs::CompoundIdType>()?;
+    m.add_class::<pubchemrs_struct::structs::BondType>()?;
+    m.add_class::<pubchemrs_struct::structs::ResponseCoordinateType>()?;
+
     // Register utility functions
     m.add_function(wrap_pyfunction!(compound_to_json, m)?)?;
 

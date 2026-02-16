@@ -41,6 +41,11 @@ class CompoundIdType(enum.IntEnum):
     #: Unknown Compound Type
     UNKNOWN = 255
 
+    @classmethod
+    def from_rust(cls, value) -> CompoundIdType:
+        """Convert a Rust CompoundIdType enum to this Python IntEnum."""
+        return cls(int(value))
+
 
 class BondType(enum.IntEnum):
     """Bond Type Information."""
@@ -61,6 +66,11 @@ class BondType(enum.IntEnum):
     IONIC = 7
     #: Unknown/Unspecified Connectivity
     UNKNOWN = 255
+
+    @classmethod
+    def from_rust(cls, value) -> BondType:
+        """Convert a Rust BondType enum to this Python IntEnum."""
+        return cls(int(value))
 
 
 class CoordinateType(enum.IntEnum):
@@ -96,6 +106,11 @@ class CoordinateType(enum.IntEnum):
     UNITS_STDBONDS = 14
     #: Coordinate units are unknown or unspecified
     UNITS_UNKNOWN = 255
+
+    @classmethod
+    def from_rust(cls, value) -> CoordinateType:
+        """Convert a Rust ResponseCoordinateType enum to this Python IntEnum."""
+        return cls(int(value))
 
 
 #: Dictionary mapping atomic numbers to their element symbols.
