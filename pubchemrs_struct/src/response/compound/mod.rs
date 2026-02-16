@@ -27,7 +27,7 @@ pub type Compounds = Vec<Compound>;
 /// Represents a chemical compound with its properties.
 /// This is a pure Rust struct that mirrors PubChemPy's Compound class.
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
+#[cfg_attr(feature = "pyo3", pyo3::pyclass(from_py_object))]
 pub struct Compound {
     /// Structural atoms.
     /// The response of atoms is not useful by used as it is, so we need to convert them when using.
@@ -70,7 +70,7 @@ impl Compound {
 
 /// Compound identifier wrapper as returned in the raw API response.
 #[derive(Debug, Clone, PartialEq, Eq, Copy, serde::Serialize, serde::Deserialize)]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
+#[cfg_attr(feature = "pyo3", pyo3::pyclass(from_py_object))]
 #[repr(u32)]
 pub enum CompoundID {
     /// PubChem Compound ID (CID).

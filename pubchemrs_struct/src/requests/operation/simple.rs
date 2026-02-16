@@ -6,7 +6,7 @@
 /// Operations available for the gene domain.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
+#[cfg_attr(feature = "pyo3", pyo3::pyclass(from_py_object))]
 pub enum GeneOperationSpecification {
     /// Retrieve gene summary (API value: `summary`)
     #[default]
@@ -29,7 +29,7 @@ impl_enum_str!(GeneOperationSpecification {
 /// Operations available for the protein domain.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
+#[cfg_attr(feature = "pyo3", pyo3::pyclass(from_py_object))]
 pub enum ProteinOperationSpecification {
     /// Retrieve protein summary (API value: `summary`)
     #[default]
@@ -52,7 +52,7 @@ impl_enum_str!(ProteinOperationSpecification {
 /// Operations available for the pathway domain.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
+#[cfg_attr(feature = "pyo3", pyo3::pyclass(from_py_object))]
 pub enum PathWayOperationSpecification {
     /// Retrieve pathway summary (API value: `summary`)
     #[default]
@@ -75,7 +75,7 @@ impl_enum_str!(PathWayOperationSpecification {
 /// Operations available for the taxonomy domain.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
+#[cfg_attr(feature = "pyo3", pyo3::pyclass(from_py_object))]
 pub enum TaxonomyOperationSpecification {
     /// Retrieve taxonomy summary (API value: `summary`)
     #[default]
@@ -92,7 +92,7 @@ impl_enum_str!(TaxonomyOperationSpecification {
 /// Operations available for the cell line domain.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
+#[cfg_attr(feature = "pyo3", pyo3::pyclass(from_py_object))]
 pub enum CellOperationSpecification {
     /// Retrieve cell line summary (API value: `summary`)
     #[default]

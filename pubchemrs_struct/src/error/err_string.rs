@@ -14,7 +14,7 @@ use super::ErrorStrategy;
 /// active strategy.
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[serde(transparent)]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
+#[cfg_attr(feature = "pyo3", pyo3::pyclass(from_py_object))]
 pub struct ErrString(Cow<'static, str>);
 
 impl ErrString {

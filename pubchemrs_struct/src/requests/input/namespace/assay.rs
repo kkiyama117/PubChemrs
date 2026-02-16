@@ -5,7 +5,7 @@ use std::str::FromStr;
 /// Namespace for the assay domain, specifying how to look up bioassays.
 #[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
+#[cfg_attr(feature = "pyo3", pyo3::pyclass(from_py_object))]
 pub enum AssayNamespace {
     /// PubChem Assay ID (API value: `aid`)
     Aid(),
@@ -91,7 +91,7 @@ impl FromStr for AssayNamespace {
 /// Bioassay type filter for assay namespace queries.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
+#[cfg_attr(feature = "pyo3", pyo3::pyclass(from_py_object))]
 pub enum AssayType {
     /// All assay types (API value: `all`)
     #[default]
@@ -141,7 +141,7 @@ impl_enum_str!(AssayType {
 /// Assay target type for filtering assays by their biological target.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
+#[cfg_attr(feature = "pyo3", pyo3::pyclass(from_py_object))]
 pub enum AssayTarget {
     /// NCBI protein GI number (API value: `gi`)
     #[default]

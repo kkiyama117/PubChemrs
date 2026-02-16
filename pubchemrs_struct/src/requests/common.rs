@@ -40,7 +40,7 @@ pub trait DomainCompatible {
 /// [official PubChem PUG REST documentation](https://pubchem.ncbi.nlm.nih.gov/docs/pug-rest).
 /// Note that the PubChem API is case-insensitive for xref path segments.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
+#[cfg_attr(feature = "pyo3", pyo3::pyclass(from_py_object))]
 pub enum XRef {
     /// Registry ID (API value: `RegistryID`)
     #[default]

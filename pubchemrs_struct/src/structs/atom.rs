@@ -4,7 +4,7 @@ use std::collections::HashMap;
 
 /// An atom in a compound's molecular structure.
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
+#[cfg_attr(feature = "pyo3", pyo3::pyclass(from_py_object))]
 pub struct Atom {
     /// Atom ID (1-based, unique within the compound).
     pub aid: u32,
@@ -88,7 +88,7 @@ impl Atom {
     serde::Deserialize,
 )]
 #[repr(u8)]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
+#[cfg_attr(feature = "pyo3", pyo3::pyclass(from_py_object))]
 pub enum Element {
     /// Hydrogen.
     #[default]

@@ -4,7 +4,7 @@ use crate::requests::common::XRef;
 
 /// A list of cross-reference types to retrieve from the PubChem API.
 #[derive(Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
+#[cfg_attr(feature = "pyo3", pyo3::pyclass(from_py_object))]
 pub struct XRefs(
     /// The list of cross-reference types to retrieve.
     pub Vec<XRef>,

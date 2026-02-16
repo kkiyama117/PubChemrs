@@ -5,7 +5,7 @@ use std::str::FromStr;
 /// Operations available for the assay domain.
 #[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
+#[cfg_attr(feature = "pyo3", pyo3::pyclass(from_py_object))]
 pub enum AssayOperationSpecification {
     /// Retrieve the full assay record (API value: `record`). This is the default.
     Record(),
@@ -83,7 +83,7 @@ impl FromStr for AssayOperationSpecification {
 /// Target type for assay target retrieval operations.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
+#[cfg_attr(feature = "pyo3", pyo3::pyclass(from_py_object))]
 pub enum AssayOperationTargetType {
     /// Protein GI number (API value: `proteingi`)
     #[default]

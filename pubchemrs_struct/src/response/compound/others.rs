@@ -1,6 +1,6 @@
 /// A single property entry from a compound record, consisting of a URN key and a value.
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
+#[cfg_attr(feature = "pyo3", pyo3::pyclass(from_py_object))]
 pub struct CompoundProps {
     /// Uniform Resource Name identifying the property.
     pub urn: PropsUrn,
@@ -10,7 +10,7 @@ pub struct CompoundProps {
 
 /// Uniform Resource Name for a compound property, identifying its source and type.
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
+#[cfg_attr(feature = "pyo3", pyo3::pyclass(from_py_object))]
 pub struct PropsUrn {
     /// Numeric data type identifier.
     datatype: u32,
@@ -34,7 +34,7 @@ pub struct PropsUrn {
 
 /// A property value from a compound record.
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
+#[cfg_attr(feature = "pyo3", pyo3::pyclass(from_py_object))]
 #[serde(rename_all = "lowercase")]
 pub enum PropsValue {
     /// Integer value.
@@ -78,7 +78,7 @@ impl PropsValue {
 
 /// Structural feature counts for a compound.
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
+#[cfg_attr(feature = "pyo3", pyo3::pyclass(from_py_object))]
 pub struct CompoundTCount {
     /// Number of chiral atom centers.
     atom_chiral: u32,
@@ -104,7 +104,7 @@ pub struct CompoundTCount {
 
 /// Stereochemistry annotation for a compound.
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
+#[cfg_attr(feature = "pyo3", pyo3::pyclass(from_py_object))]
 pub enum Stereo {
     /// Tetrahedral stereocenter definition.
     #[serde(rename = "tetrahedral")]

@@ -18,7 +18,7 @@ use crate::requests::common::UrlParts;
 /// Input specification combining domain, namespace, and identifiers for a PubChem API request.
 #[derive(Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
+#[cfg_attr(feature = "pyo3", pyo3::pyclass(from_py_object))]
 pub struct InputSpecification {
     /// The data domain to query (e.g., compound, substance, assay).
     pub domain: Domain,

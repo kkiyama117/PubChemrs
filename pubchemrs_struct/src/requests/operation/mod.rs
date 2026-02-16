@@ -23,7 +23,7 @@ use crate::{error::PubChemResult, requests::input::Domain};
 /// API operation specifying what to do with matched PubChem records.
 #[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase", untagged)]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
+#[cfg_attr(feature = "pyo3", pyo3::pyclass(from_py_object))]
 pub enum Operation {
     /// Operation for the compound domain.
     Compound(CompoundOperationSpecification),

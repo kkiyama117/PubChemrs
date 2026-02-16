@@ -8,7 +8,7 @@ use super::xrefs::XRefs;
 /// Operations available for the compound domain.
 #[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
+#[cfg_attr(feature = "pyo3", pyo3::pyclass(from_py_object))]
 pub enum CompoundOperationSpecification {
     /// Retrieve the full compound record (API value: `record`). This is the default.
     Record(),

@@ -3,7 +3,7 @@ use crate::requests::input::Namespace;
 /// Namespace for the gene domain.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
+#[cfg_attr(feature = "pyo3", pyo3::pyclass(from_py_object))]
 pub enum GeneNamespace {
     /// NCBI gene ID (API value: `geneid`)
     #[default]
@@ -32,7 +32,7 @@ impl From<GeneNamespace> for Namespace {
 /// Namespace for the protein domain.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
+#[cfg_attr(feature = "pyo3", pyo3::pyclass(from_py_object))]
 pub enum ProteinNamespace {
     /// Protein accession number (API value: `accession`)
     #[default]
@@ -58,7 +58,7 @@ impl From<ProteinNamespace> for Namespace {
 /// Namespace for the pathway domain.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
+#[cfg_attr(feature = "pyo3", pyo3::pyclass(from_py_object))]
 pub enum PathWayNamespace {
     /// Pathway accession number (API value: `pwacc`)
     #[default]
@@ -78,7 +78,7 @@ impl From<PathWayNamespace> for Namespace {
 /// Namespace for the taxonomy domain.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
+#[cfg_attr(feature = "pyo3", pyo3::pyclass(from_py_object))]
 pub enum TaxonomyNamespace {
     /// NCBI taxonomy ID (API value: `taxid`)
     #[default]
@@ -101,7 +101,7 @@ impl From<TaxonomyNamespace> for Namespace {
 /// Namespace for the cell line domain.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
+#[cfg_attr(feature = "pyo3", pyo3::pyclass(from_py_object))]
 pub enum CellNamespace {
     /// Cell line accession number (API value: `cellacc`)
     #[default]

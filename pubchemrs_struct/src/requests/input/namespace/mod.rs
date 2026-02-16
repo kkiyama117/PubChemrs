@@ -16,7 +16,7 @@ pub use substance::*;
 /// Namespace specifying how identifiers are interpreted in a PubChem API request.
 #[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase", untagged)]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
+#[cfg_attr(feature = "pyo3", pyo3::pyclass(from_py_object))]
 pub enum Namespace {
     /// Compound-specific namespace (CID, name, SMILES, etc.)
     Compound(CompoundNamespace),

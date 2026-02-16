@@ -7,7 +7,7 @@ use super::xrefs::XRefs;
 /// Operations available for the substance domain.
 #[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
+#[cfg_attr(feature = "pyo3", pyo3::pyclass(from_py_object))]
 pub enum SubstanceOperationSpecification {
     /// Retrieve the full substance record (API value: `record`). This is the default.
     Record(),

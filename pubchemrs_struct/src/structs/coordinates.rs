@@ -1,7 +1,7 @@
 /// Dimensionality of atom coordinates.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
+#[cfg_attr(feature = "pyo3", pyo3::pyclass(from_py_object))]
 pub enum CoordinateType {
     /// Two-dimensional coordinates (x, y).
     #[serde(rename = "2d")]
@@ -19,7 +19,7 @@ impl_enum_str!(CoordinateType {
 
 /// A 2D or 3D spatial coordinate.
 #[derive(Debug, Copy, Clone, Default, PartialEq, serde::Serialize, serde::Deserialize)]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
+#[cfg_attr(feature = "pyo3", pyo3::pyclass(from_py_object))]
 pub struct Coordinate {
     /// X coordinate.
     #[serde(default)]

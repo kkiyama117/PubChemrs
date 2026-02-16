@@ -15,7 +15,7 @@ pub const PUBCHEM_API_BASE: &str = "https://pubchem.ncbi.nlm.nih.gov/rest/pug";
 /// Assembles input specification, operation, and output format into URL path
 /// segments and an optional POST body. Use `Default::default()` for optional fields.
 #[derive(Clone, Debug, Default, serde::Serialize, serde::Deserialize)]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
+#[cfg_attr(feature = "pyo3", pyo3::pyclass(from_py_object))]
 pub struct UrlBuilder {
     /// The input specification (domain, namespace, and identifiers).
     pub input_specification: InputSpecification,

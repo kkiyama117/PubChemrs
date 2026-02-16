@@ -2,7 +2,7 @@
 ///
 /// May contain either source names or detailed information records.
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
+#[cfg_attr(feature = "pyo3", pyo3::pyclass(from_py_object))]
 pub enum PubChemInformationList {
     /// List of data source names.
     SourceName(Vec<String>),
@@ -32,7 +32,7 @@ impl PubChemInformationList {
 
 /// A single information record from a PubChem response.
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass(get_all))]
+#[cfg_attr(feature = "pyo3", pyo3::pyclass(get_all, from_py_object))]
 pub struct PubChemInformation {
     /// Compound ID, if present.
     #[serde(rename = "CID", default)]

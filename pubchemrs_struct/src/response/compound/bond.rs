@@ -3,7 +3,7 @@
 /// Contains parallel arrays: each index `i` describes a bond
 /// between `aid1[i]` and `aid2[i]` with bond order `order[i]`.
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
+#[cfg_attr(feature = "pyo3", pyo3::pyclass(from_py_object))]
 pub struct BondInner {
     /// First atom IDs for each bond.
     pub aid1: Vec<u32>,

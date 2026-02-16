@@ -2,7 +2,7 @@ use std::{fmt::Display, str::FromStr};
 
 /// A list of compound property tags to retrieve from the PubChem API.
 #[derive(Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
+#[cfg_attr(feature = "pyo3", pyo3::pyclass(from_py_object))]
 pub struct CompoundProperty(
     /// The list of property tag names (e.g., `MolecularFormula`, `MolecularWeight`).
     pub Vec<CompoundPropertyTag>,
