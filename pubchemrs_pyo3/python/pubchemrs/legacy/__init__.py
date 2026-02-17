@@ -25,6 +25,20 @@ from .compound import (
     get_compounds,
     memoized_property,
 )
+from .errors import (
+    BadRequestError,
+    MethodNotAllowedError,
+    NotFoundError,
+    PubChemHTTPError,
+    PubChemPyDeprecationWarning,
+    PubChemPyError,
+    ResponseParseError,
+    ServerBusyError,
+    ServerError,
+    TimeoutError,
+    UnimplementedError,
+    create_http_error,
+)
 
 if t.TYPE_CHECKING:
     import pandas as pd
@@ -40,8 +54,8 @@ if not _CA_FILE:
         _CA_FILE = None
 
 
-__author__ = "Matt Swain"
-__email__ = "m.swain@me.com"
+__author__ = "kkiyama117"
+__email__ = "k.kiyama117@gmail.com"
 __version__ = "1.0.5"
 __license__ = "MIT"
 
@@ -858,103 +872,6 @@ def substances_to_frame(substances: list[Substance] | Substance, properties: lis
         substances = [substances]
     properties = set(properties) | {"sid"} if properties else None
     return pd.DataFrame.from_records([s.to_dict(properties) for s in substances], index="sid")
-
-
-class PubChemPyDeprecationWarning(DeprecationWarning):
-    """Warning category for deprecated features."""
-
-
-class PubChemPyError(Exception):
-    """Base class for all PubChemPy exceptions."""
-
-
-class ResponseParseError(PubChemPyError):
-    """PubChem response is uninterpretable."""
-
-
-class PubChemHTTPError(PubChemPyError):
-    """Generic error class to handle HTTP error codes."""
-
-    def __init__(self, code: int, msg: str, details: list[str]) -> None:
-        """Initialize with HTTP status code, message, and additional details.
-
-        Args:
-            code: HTTP status code.
-            msg: Error message.
-            details: Additional error details from PubChem API.
-        """
-        super().__init__(msg)
-        self.code = code
-        self.msg = msg
-        self.details = details
-
-    def __str__(self) -> str:
-        output = f"PubChem HTTP Error {self.code} {self.msg}"
-        if self.details:
-            details = ", ".join(self.details)
-            output = f"{output} ({details})"
-        return output
-
-    def __repr__(self) -> str:
-        return f"{self.__class__.__name__}({self.code!r}, {self.msg!r}, {self.details!r})"
-
-
-def create_http_error(e: HTTPError) -> PubChemHTTPError:
-    """Create appropriate PubChem HTTP error subclass based on status code."""
-    code = e.code
-    msg = e.msg
-    details = []
-    try:
-        fault = json.loads(e.read().decode())["Fault"]
-        msg = fault.get("Code", msg)
-        if "Message" in fault:
-            msg = f"{msg}: {fault['Message']}"
-        details = fault.get("Details", [])
-    except (ValueError, IndexError, KeyError):
-        pass
-
-    error_map = {
-        400: BadRequestError,
-        404: NotFoundError,
-        405: MethodNotAllowedError,
-        500: ServerError,
-        501: UnimplementedError,
-        503: ServerBusyError,
-        504: TimeoutError,
-    }
-    error_class = error_map.get(code, PubChemHTTPError)
-    return error_class(code, msg, details)
-
-
-class BadRequestError(PubChemHTTPError):
-    """400: Request is improperly formed (e.g. syntax error in the URL or POST body)."""
-
-
-class NotFoundError(PubChemHTTPError):
-    """404: The input record was not found (e.g. invalid CID)."""
-
-
-class MethodNotAllowedError(PubChemHTTPError):
-    """405: Request not allowed (e.g. invalid MIME type in the HTTP Accept header)."""
-
-
-class ServerError(PubChemHTTPError):
-    """500: Some problem on the server side (e.g. a database server down)."""
-
-
-class UnimplementedError(PubChemHTTPError):
-    """501: The requested operation has not (yet) been implemented by the server."""
-
-
-class ServerBusyError(PubChemHTTPError):
-    """503: Too many requests or server is busy, retry later."""
-
-
-class TimeoutError(PubChemHTTPError):
-    """504: The request timed out, from server overload or too broad a request.
-
-    See :ref:`Avoiding TimeoutError <avoiding_timeouterror>` for more information.
-    """
 
 
 if __name__ == "__main__":
