@@ -9,6 +9,7 @@ import warnings
 from itertools import zip_longest
 
 from pubchemrs._core import _get_default_client as _rust_client
+from pubchemrs._pubchemrs import Atom
 from pubchemrs._pubchemrs import PubChemNotFoundError as _RustNotFoundError
 from pubchemrs._pubchemrs import compound_to_json as _compound_to_json
 
@@ -309,101 +310,6 @@ def _get_compounds_via_rust(
     except _RustNotFoundError:
         return []
     return [Compound(_clean_nulls(json.loads(_compound_to_json(c)))) for c in rust_compounds]
-
-
-class Atom:
-    """Class to represent an atom in a :class:`~pubchempy.Compound`."""
-
-    def __init__(
-        self,
-        aid: int,
-        number: int,
-        x: float | None = None,
-        y: float | None = None,
-        z: float | None = None,
-        charge: int = 0,
-    ) -> None:
-        """Initialize with an atom ID, atomic number, coordinates and optional charge.
-
-        Args:
-            aid: Atom ID.
-            number: Atomic number.
-            x: X coordinate.
-            y: Y coordinate.
-            z: Z coordinate.
-            charge: Formal charge on atom.
-        """
-        self.aid = aid
-        """The atom ID within the owning Compound."""
-        self.number = number
-        """The atomic number for this atom."""
-        self.x = x
-        """The x coordinate for this atom."""
-        self.y = y
-        """The y coordinate for this atom."""
-        self.z = z
-        """The z coordinate for this atom. Will be ``None`` in 2D Compound records."""
-        self.charge = charge
-        """The formal charge on this atom."""
-
-    def __repr__(self) -> str:
-        return f"Atom({self.aid!r}, {self.element!r})"
-
-    def __eq__(self, other: object) -> bool:
-        return (
-            isinstance(other, type(self))
-            and self.aid == other.aid
-            and self.element == other.element
-            and self.x == other.x
-            and self.y == other.y
-            and self.z == other.z
-            and self.charge == other.charge
-        )
-
-    @deprecated("Dictionary style access to Atom attributes is deprecated")
-    def __getitem__(self, prop):
-        """Allow dict-style access to attributes for backwards compatibility."""
-        if prop in {"element", "x", "y", "z", "charge"}:
-            return getattr(self, prop)
-        raise KeyError(prop)
-
-    @deprecated("Dictionary style access to Atom attributes is deprecated")
-    def __setitem__(self, prop, val):
-        """Allow dict-style setting of attributes for backwards compatibility."""
-        setattr(self, prop, val)
-
-    @deprecated("Dictionary style access to Atom attributes is deprecated")
-    def __contains__(self, prop):
-        """Allow dict-style checking of attributes for backwards compatibility."""
-        if prop in {"element", "x", "y", "z", "charge"}:
-            return getattr(self, prop) is not None
-        return False
-
-    @property
-    def element(self) -> str:
-        """The element symbol for this atom."""
-        return ELEMENTS.get(self.number, str(self.number))
-
-    def to_dict(self) -> dict[str, t.Any]:
-        """Return a dictionary containing Atom data."""
-        data = {"aid": self.aid, "number": self.number, "element": self.element}
-        for coord in {"x", "y", "z"}:
-            if getattr(self, coord) is not None:
-                data[coord] = getattr(self, coord)
-        if self.charge != 0:
-            data["charge"] = self.charge
-        return data
-
-    def set_coordinates(self, x: float, y: float, z: float | None = None) -> None:
-        """Set all coordinate dimensions at once."""
-        self.x = x
-        self.y = y
-        self.z = z
-
-    @property
-    def coordinate_type(self) -> str:
-        """Whether this atom has 2D or 3D coordinates."""
-        return "2d" if self.z is None else "3d"
 
 
 class Bond:
