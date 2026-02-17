@@ -43,7 +43,7 @@ def test_atoms_deprecated(c1):
     with warnings.catch_warnings(record=True) as w:
         assert {a["element"] for a in c1.atoms} == {"C", "H"}
         assert len(w) == 1
-        assert w[0].category == PubChemPyDeprecationWarning
+        assert w[0].category == DeprecationWarning
         expected_message = (
             "__getitem__ is deprecated: Dictionary style access to Atom attributes is "
             "deprecated"
@@ -92,7 +92,7 @@ def test_coordinates_deprecated(c1):
         assert isinstance(c1.atoms[0]["y"], (float, int))
         assert "z" not in c1.atoms[0]
         assert len(w) == 3
-        assert w[0].category == PubChemPyDeprecationWarning
+        assert w[0].category == DeprecationWarning
         expected_message = (
             "__getitem__ is deprecated: Dictionary style access to Atom attributes is "
             "deprecated"
@@ -167,7 +167,7 @@ def test_charged_compound_deprecated(c2):
     with warnings.catch_warnings(record=True) as w:
         assert c2.atoms[0]["charge"] == -1
         assert len(w) == 1
-        assert w[0].category == PubChemPyDeprecationWarning
+        assert w[0].category == DeprecationWarning
         expected_message = (
             "__getitem__ is deprecated: Dictionary style access to Atom attributes is "
             "deprecated"

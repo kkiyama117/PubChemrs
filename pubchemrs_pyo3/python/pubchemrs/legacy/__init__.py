@@ -13,13 +13,13 @@ from urllib.parse import quote, urlencode
 from urllib.request import urlopen
 
 from .compound import (
+    ELEMENTS,
     Atom,
     Bond,
     BondType,
     Compound,
     CompoundIdType,
     CoordinateType,
-    ELEMENTS,
     compounds_to_frame,
     deprecated,
     get_compounds,
@@ -860,7 +860,7 @@ def substances_to_frame(substances: list[Substance] | Substance, properties: lis
     return pd.DataFrame.from_records([s.to_dict(properties) for s in substances], index="sid")
 
 
-class PubChemPyDeprecationWarning(Warning):
+class PubChemPyDeprecationWarning(DeprecationWarning):
     """Warning category for deprecated features."""
 
 
