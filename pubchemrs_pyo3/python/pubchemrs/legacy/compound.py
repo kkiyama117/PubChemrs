@@ -10,8 +10,10 @@ from itertools import zip_longest
 
 from pubchemrs._core import _get_default_client as _rust_client
 from pubchemrs._pubchemrs import Atom
+from pubchemrs._pubchemrs import PubChemAPIError as _RustPubChemAPIError
 from pubchemrs._pubchemrs import PubChemNotFoundError as _RustNotFoundError
 from pubchemrs._pubchemrs import compound_to_json as _compound_to_json
+from pubchemrs.legacy.errors import _rust_api_error_to_legacy
 
 if t.TYPE_CHECKING:
     import pandas as pd
@@ -309,6 +311,8 @@ def _get_compounds_via_rust(
         rust_compounds = client.get_compounds_sync(identifier, namespace)
     except _RustNotFoundError:
         return []
+    except _RustPubChemAPIError as e:
+        raise _rust_api_error_to_legacy(e) from e
     return [Compound(_clean_nulls(json.loads(_compound_to_json(c)))) for c in rust_compounds]
 
 
