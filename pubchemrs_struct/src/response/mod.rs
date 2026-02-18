@@ -31,7 +31,7 @@ pub enum PubChemResponse {
 
 /// API fault/error response returned by PubChem when a request fails.
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
+#[cfg_attr(feature = "pyo3", pyo3::pyclass(from_py_object))]
 pub struct PubChemFault {
     /// Machine-readable error code (e.g. `"PUGREST.BadRequest"`).
     #[serde(rename = "Code")]

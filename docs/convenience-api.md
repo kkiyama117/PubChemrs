@@ -15,6 +15,8 @@ The convenience API provides `CompoundQuery` and `OtherInputsQuery` as high-leve
 | `CompoundQuery::with_inchikey("BSYN...")` | InChIKey | GET |
 | `CompoundQuery::with_formula("C9H8O4")` | Molecular formula | POST |
 
+`CompoundQuery` is reusable: terminal methods (e.g. `molecular_formula()`, `properties()`, `synonyms()`) clone the internal identifiers for each call, so you can call multiple methods on the same query instance without rebuilding it.
+
 ### Single-Property Accessors
 
 Each accessor makes one HTTP request and returns the property value for the first matching compound.

@@ -110,7 +110,7 @@ where
 /// assert!(water.molecular_weight.is_none()); // not requested
 /// ```
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass(get_all))]
+#[cfg_attr(feature = "pyo3", pyo3::pyclass(get_all, from_py_object))]
 pub struct CompoundProperties {
     /// PubChem Compound Identifier (CID). Always present in API responses.
     #[serde(rename = "CID")]

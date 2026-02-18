@@ -2,7 +2,7 @@ use crate::error::PubChemError;
 
 /// A chemical bond between two atoms.
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
+#[cfg_attr(feature = "pyo3", pyo3::pyclass(from_py_object))]
 pub struct Bond {
     /// Atom ID of the first bonded atom.
     pub aid1: u32,
@@ -27,19 +27,23 @@ impl Bond {
         }
     }
 
-    /// Sets the display style annotation for this bond.
-    pub fn set_style(&mut self, style: Option<u32>) {
-        self.style = style;
+    /// Returns a new bond with the given display style annotation.
+    #[must_use]
+    pub fn with_style(self, style: Option<u32>) -> Self {
+        Self { style, ..self }
     }
 
-    /// Returns `true` if this bond connects the same pair of atoms as `other`.
+    /// Returns `true` if this bond connects the same pair of atoms as `other`,
+    /// regardless of atom ID ordering (bonds are undirected).
     pub fn is_same_bond(&self, other: &Self) -> bool {
-        (self.aid1 == other.aid1) && (self.aid2 == other.aid2)
+        (self.aid1 == other.aid1 && self.aid2 == other.aid2)
+            || (self.aid1 == other.aid2 && self.aid2 == other.aid1)
     }
 
-    /// Returns `true` if this bond connects the given atom ID pair.
+    /// Returns `true` if this bond connects the given atom ID pair,
+    /// regardless of atom ID ordering (bonds are undirected).
     pub fn is_same_bond_with_aid(&self, aid1: u32, aid2: u32) -> bool {
-        (self.aid1 == aid1) && (self.aid2 == aid2)
+        (self.aid1 == aid1 && self.aid2 == aid2) || (self.aid1 == aid2 && self.aid2 == aid1)
     }
 }
 
@@ -53,7 +57,7 @@ impl std::fmt::Display for Bond {
 #[derive(
     Copy, Clone, Debug, Default, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize,
 )]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
+#[cfg_attr(feature = "pyo3", pyo3::pyclass(eq, eq_int, from_py_object))]
 #[repr(u8)]
 pub enum BondType {
     /// Single bond.

@@ -166,6 +166,62 @@ For cases not covered by the high-level methods:
 | Structure Search | `CompoundNamespace::StructureSearch(...)` | POST |
 | Fast Search | `CompoundNamespace::FastSearch(...)` | POST |
 
+## Substance Namespaces
+
+| Namespace | Enum | HTTP Method |
+|-----------|------|-------------|
+| SID | `SubstanceNamespace::Sid()` | GET |
+| Name | `SubstanceNamespace::Name()` | GET |
+| Source (all) | `SubstanceNamespace::SourceAll(name)` | GET |
+| Source (by ID) | `SubstanceNamespace::SourcdId(id)` | GET |
+| Cross-reference | `SubstanceNamespace::XRef(xref)` | GET |
+| List Key | `SubstanceNamespace::ListKey()` | GET |
+
+## Gene Namespaces
+
+| Namespace | Enum |
+|-----------|------|
+| Gene ID | `GeneNamespace::GeneID` |
+| Gene Symbol | `GeneNamespace::GeneSymbol` |
+| Accession | `GeneNamespace::Accession` |
+| Synonym | `GeneNamespace::Synonym` |
+
+## Operations by Domain
+
+Each domain has its own operation enum with domain-specific variants:
+
+### Compound (`CompoundOperationSpecification`)
+
+Record, Property, Synonyms, Sids, Cids, Aids, AssaySummary, Classification, XRefs, Description, Conformers, Dates, None
+
+### Substance (`SubstanceOperationSpecification`)
+
+Record, Synonyms, Sids, Cids, Aids, AssaySummary, Classification, XRefs, Description, Dates
+
+### Assay (`AssayOperationSpecification`)
+
+Record, Concise, Aids, Cids, Sids, Description, Targets, DoseResponse, Summary, Classification, Dates
+
+### Gene (`GeneOperationSpecification`)
+
+Summary (default), Aids, Concise, Pwaccs
+
+### Protein (`ProteinOperationSpecification`)
+
+Summary (default), Aids, Concise, Pwaccs
+
+### Pathway (`PathWayOperationSpecification`)
+
+Summary (default), Cids, Concise, Pwaccs
+
+### Taxonomy (`TaxonomyOperationSpecification`)
+
+Summary (default), Aids
+
+### Cell (`CellOperationSpecification`)
+
+Summary (default), Aids
+
 ## URL Pattern
 
 All requests follow the PubChem PUG REST URL pattern:

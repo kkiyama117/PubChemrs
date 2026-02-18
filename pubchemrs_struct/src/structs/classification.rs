@@ -1,7 +1,7 @@
 /// Compound record type indicating how the compound was processed.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "UPPERCASE")]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
+#[cfg_attr(feature = "pyo3", pyo3::pyclass(eq, eq_int, from_py_object))]
 pub enum CompoundIdType {
     /// As deposited by the submitter.
     Deposited = 0,
@@ -34,7 +34,7 @@ impl_enum_str!(CompoundIdType {
 
 /// Coordinate set type flags as returned in PubChem responses.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
+#[cfg_attr(feature = "pyo3", pyo3::pyclass(eq, eq_int, from_py_object))]
 pub enum ResponseCoordinateType {
     /// Two-dimensional coordinates.
     #[serde(rename = "TWOD")]
@@ -96,7 +96,7 @@ impl_enum_str!(ResponseCoordinateType {
 
 /// BioAssay project category.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
+#[cfg_attr(feature = "pyo3", pyo3::pyclass(from_py_object))]
 pub enum ProjectCategory {
     /// Molecular Libraries Screening Center Network.
     #[serde(rename = "MLSCN")]

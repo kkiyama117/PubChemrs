@@ -1,0 +1,25 @@
+[build-system]
+requires      = ["maturin>=1.0,<2.0"]
+build-backend = "maturin"
+
+[project]
+name            = "pubchemrs"
+version         = "0.1.0"
+requires-python = ">=3.9"
+description     = "Rust-powered PubChem API client for Python"
+license         = { text = "MIT" }
+dependencies    = []
+
+[dependency-groups]
+dev = ["pytest>=8.0", "pytest-asyncio>=0.24", "pandas>=2.0"]
+
+[tool.maturin]
+bindings      = "pyo3"
+python-source = "python"
+module-name   = "pubchemrs._pubchemrs"
+
+[tool.pytest.ini_options]
+testpaths    = ["python/tests"]
+markers      = ["network: tests that require network access to PubChem API"]
+asyncio_mode = "auto"
+filterwarnings = ["default"]

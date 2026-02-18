@@ -8,7 +8,7 @@ use crate::requests::common::XRef;
 /// Namespace for the substance domain, specifying how to look up substances.
 #[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
+#[cfg_attr(feature = "pyo3", pyo3::pyclass(from_py_object))]
 pub enum SubstanceNamespace {
     /// PubChem Substance ID (API value: `sid`)
     Sid(),

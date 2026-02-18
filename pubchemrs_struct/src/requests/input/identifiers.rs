@@ -11,7 +11,7 @@ use crate::requests::common::UrlParts;
 /// let identifiers: Identifiers = 32.into();
 /// ```
 #[derive(Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
+#[cfg_attr(feature = "pyo3", pyo3::pyclass(from_py_object))]
 pub struct Identifiers(pub Vec<IdentifierValue>);
 
 impl Identifiers {
@@ -49,7 +49,7 @@ impl<I: Into<IdentifierValue>> From<I> for Identifiers {
 #[derive(
     Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord, serde::Serialize, serde::Deserialize,
 )]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
+#[cfg_attr(feature = "pyo3", pyo3::pyclass(from_py_object))]
 pub enum IdentifierValue {
     /// Numeric identifier (e.g., CID, SID, AID).
     Int(u32),

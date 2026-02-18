@@ -2,9 +2,12 @@ use crate::error::PubChemError;
 use crate::structs::coordinates::{Coordinate, CoordinateType};
 use std::collections::HashMap;
 
+#[cfg(feature = "pyo3")]
+use pyo3::prelude::*;
+
 /// An atom in a compound's molecular structure.
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
+#[cfg_attr(feature = "pyo3", pyo3::pyclass(from_py_object))]
 pub struct Atom {
     /// Atom ID (1-based, unique within the compound).
     pub aid: u32,
@@ -48,7 +51,7 @@ impl Atom {
         }
     }
 
-    pub(crate) fn _from_record_data(
+    pub(crate) fn from_record_data(
         aid: u32,
         element: Element,
         coordinate: Option<Coordinate>,
@@ -73,6 +76,181 @@ impl Atom {
     }
 }
 
+#[cfg(feature = "pyo3")]
+#[pymethods]
+impl Atom {
+    #[new]
+    #[pyo3(signature = (aid, number, x=None, y=None, z=None, charge=0))]
+    fn py_new(
+        aid: u32,
+        number: u8,
+        x: Option<f32>,
+        y: Option<f32>,
+        z: Option<f32>,
+        charge: i32,
+    ) -> PyResult<Self> {
+        let element = Element::try_from(number).map_err(|_| {
+            pyo3::exceptions::PyValueError::new_err(format!("invalid atomic number: {number}"))
+        })?;
+        let coordinate = match (x, y) {
+            (Some(x_val), Some(y_val)) => Some(Coordinate::new(x_val, y_val, z)),
+            _ => None,
+        };
+        Ok(Self {
+            aid,
+            number,
+            element,
+            coordinate,
+            charge,
+        })
+    }
+
+    #[getter]
+    fn get_aid(&self) -> u32 {
+        self.aid
+    }
+
+    #[getter]
+    fn get_number(&self) -> u8 {
+        self.number
+    }
+
+    #[getter]
+    fn get_element(&self) -> String {
+        self.element.to_string()
+    }
+
+    #[getter]
+    fn get_x(&self) -> Option<f32> {
+        self.coordinate.and_then(|c| c.x)
+    }
+
+    #[getter]
+    fn get_y(&self) -> Option<f32> {
+        self.coordinate.and_then(|c| c.y)
+    }
+
+    #[getter]
+    fn get_z(&self) -> Option<f32> {
+        self.coordinate.and_then(|c| c.z)
+    }
+
+    #[getter]
+    fn get_charge(&self) -> i32 {
+        self.charge
+    }
+
+    #[setter]
+    fn set_charge(&mut self, value: i32) {
+        self.charge = value;
+    }
+
+    #[getter]
+    fn get_coordinate_type(&self) -> &'static str {
+        match self.coordinate.and_then(|c| c.z) {
+            Some(_) => "3d",
+            None => "2d",
+        }
+    }
+
+    fn set_coordinates(&mut self, x: f32, y: f32, z: Option<f32>) {
+        self.coordinate = Some(Coordinate::new(x, y, z));
+    }
+
+    fn to_dict<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, pyo3::types::PyDict>> {
+        let dict = pyo3::types::PyDict::new(py);
+        dict.set_item("aid", self.aid)?;
+        dict.set_item("number", self.number)?;
+        dict.set_item("element", self.element.to_string())?;
+        if let Some(coord) = &self.coordinate {
+            if let Some(x) = coord.x {
+                dict.set_item("x", x)?;
+            }
+            if let Some(y) = coord.y {
+                dict.set_item("y", y)?;
+            }
+            if let Some(z) = coord.z {
+                dict.set_item("z", z)?;
+            }
+        }
+        if self.charge != 0 {
+            dict.set_item("charge", self.charge)?;
+        }
+        Ok(dict)
+    }
+
+    fn __repr__(&self) -> String {
+        format!("Atom({}, '{}')", self.aid, self.element)
+    }
+
+    fn __eq__(&self, other: &Self) -> bool {
+        self.aid == other.aid
+            && self.element == other.element
+            && self.coordinate == other.coordinate
+            && self.charge == other.charge
+    }
+
+    fn __getitem__(&self, py: Python<'_>, prop: &str) -> PyResult<Py<PyAny>> {
+        PyErr::warn(
+            py,
+            &py.get_type::<pyo3::exceptions::PyDeprecationWarning>(),
+            c"__getitem__ is deprecated: Dictionary style access to Atom attributes is deprecated",
+            1,
+        )?;
+        match prop {
+            "element" => Ok(self
+                .element
+                .to_string()
+                .into_pyobject(py)?
+                .into_any()
+                .unbind()),
+            "x" => Ok(self.get_x().into_pyobject(py)?.into_any().unbind()),
+            "y" => Ok(self.get_y().into_pyobject(py)?.into_any().unbind()),
+            "z" => Ok(self.get_z().into_pyobject(py)?.into_any().unbind()),
+            "charge" => Ok(self.charge.into_pyobject(py)?.into_any().unbind()),
+            _ => Err(pyo3::exceptions::PyKeyError::new_err(prop.to_string())),
+        }
+    }
+
+    fn __setitem__(
+        &mut self,
+        py: Python<'_>,
+        prop: &str,
+        value: &Bound<'_, PyAny>,
+    ) -> PyResult<()> {
+        PyErr::warn(
+            py,
+            &py.get_type::<pyo3::exceptions::PyDeprecationWarning>(),
+            c"__setitem__ is deprecated: Dictionary style access to Atom attributes is deprecated",
+            1,
+        )?;
+        match prop {
+            "charge" => {
+                self.charge = value.extract()?;
+                Ok(())
+            }
+            _ => Err(pyo3::exceptions::PyKeyError::new_err(prop.to_string())),
+        }
+    }
+
+    fn __contains__(&self, py: Python<'_>, prop: &str) -> PyResult<bool> {
+        PyErr::warn(
+            py,
+            &py.get_type::<pyo3::exceptions::PyDeprecationWarning>(),
+            c"__contains__ is deprecated: Dictionary style access to Atom attributes is deprecated",
+            1,
+        )?;
+        match prop {
+            "element" => Ok(true),
+            "x" => Ok(self.get_x().is_some()),
+            "y" => Ok(self.get_y().is_some()),
+            "z" => Ok(self.get_z().is_some()),
+            "charge" => Ok(true),
+            _ => Ok(false),
+        }
+    }
+}
+
 /// All 118 chemical elements plus PubChem special atom types.
 #[derive(
     Copy,
@@ -88,7 +266,7 @@ impl Atom {
     serde::Deserialize,
 )]
 #[repr(u8)]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
+#[cfg_attr(feature = "pyo3", pyo3::pyclass(from_py_object))]
 pub enum Element {
     /// Hydrogen.
     #[default]

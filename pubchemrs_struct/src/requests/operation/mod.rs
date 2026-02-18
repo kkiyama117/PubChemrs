@@ -1,21 +1,29 @@
 //! Operation types specifying what action to perform on matched PubChem records.
 
+mod assay;
+mod compound;
 mod property;
+mod simple;
+mod substance;
 mod xrefs;
 
 use std::{borrow::Cow, str::FromStr};
 
+pub use assay::*;
+pub use compound::*;
 pub use property::*;
+pub use simple::*;
+pub use substance::*;
 pub use xrefs::*;
 
-use crate::requests::common::UrlParts;
+use crate::requests::common::{DomainCompatible, UrlParts};
 use crate::requests::input::DomainOtherInputs;
 use crate::{error::PubChemResult, requests::input::Domain};
 
 /// API operation specifying what to do with matched PubChem records.
 #[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase", untagged)]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
+#[cfg_attr(feature = "pyo3", pyo3::pyclass(from_py_object))]
 pub enum Operation {
     /// Operation for the compound domain.
     Compound(CompoundOperationSpecification),
@@ -61,12 +69,15 @@ impl Default for Operation {
 
 impl UrlParts for Operation {
     fn to_url_parts(&self) -> Vec<String> {
-        // TODO: Use inner one
-        // self.into().to_url_parts()
         vec![self.to_string()]
     }
 }
 
+/// Parses an operation string without domain context.
+///
+/// When a string matches multiple domain-specific operations (e.g., "record"
+/// exists in compound, substance, and assay), the compound variant is
+/// preferred. Use [`Operation::from_str_with_domain`] for unambiguous parsing.
 impl FromStr for Operation {
     type Err = crate::error::ParseEnumError;
 
@@ -133,11 +144,11 @@ impl Operation {
                 .map_err(|e| e.into()),
             Domain::Others(domain_other_inputs) => {
                 match domain_other_inputs {
-                    // they may not accept operations
                     DomainOtherInputs::SourcesSubstances | DomainOtherInputs::SourcesAssays => {
                         Ok(Self::OtherInput())
                     }
-                    // TODO: Check each `other inputs`
+                    // TODO: Validate operation compatibility for each DomainOtherInputs variant
+                    // (e.g. Conformers, Annotations, Classification may have restricted operations)
                     _ => Self::from_str(s_ref).map_err(|e| e.into()),
                 }
             }
@@ -193,781 +204,96 @@ impl From<CellOperationSpecification> for Operation {
     }
 }
 
-/// Operations available for the compound domain.
-#[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
-#[serde(rename_all = "lowercase")]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
-pub enum CompoundOperationSpecification {
-    /// Retrieve the full compound record (API value: `record`). This is the default.
-    Record(),
-    /// Retrieve specific compound properties (API path: `property/<tags>`)
-    Property(CompoundProperty),
-    /// Retrieve compound synonyms (API value: `synonyms`)
-    Synonyms(),
-    /// Retrieve associated substance IDs (API value: `sids`)
-    Sids(),
-    /// Retrieve compound IDs (API value: `cids`)
-    Cids(),
-    /// Retrieve associated assay IDs (API value: `aids`)
-    Aids(),
-    /// Retrieve assay summary (API value: `assaysummary`)
-    AssaySummary(),
-    /// Retrieve classification hierarchy (API value: `classification`)
-    Classification(),
-    /// Retrieve cross-references (API path: `xrefs/<types>`)
-    XRefs(XRefs),
-    /// Retrieve compound description (API value: `description`)
-    Description(),
-    /// Retrieve 3D conformers (API value: `conformers`)
-    Conformers(),
-    /// No operation, used for source searches.
-    None(),
-}
+impl DomainCompatible for Operation {
+    fn is_compatible_with_domain(&self, domain: &Domain) -> bool {
+        matches!(
+            (self, domain),
+            (Operation::Compound(_), Domain::Compound())
+                | (Operation::Substance(_), Domain::Substance())
+                | (Operation::Assay(_), Domain::Assay())
+                | (Operation::Gene(_), Domain::Gene())
+                | (Operation::Protein(_), Domain::Protein())
+                | (Operation::PathWay(_), Domain::PathWay())
+                | (Operation::Taxonomy(_), Domain::Taxonomy())
+                | (Operation::Cell(_), Domain::Cell())
+                | (Operation::OtherInput(), Domain::Others(_))
+        )
+    }
 
-impl std::fmt::Display for CompoundOperationSpecification {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            CompoundOperationSpecification::Record() => write!(f, "record"),
-            CompoundOperationSpecification::Property(p) => write!(f, "property/{}", p),
-            CompoundOperationSpecification::Synonyms() => write!(f, "synonyms"),
-            CompoundOperationSpecification::Sids() => write!(f, "sids"),
-            CompoundOperationSpecification::Cids() => write!(f, "cids"),
-            CompoundOperationSpecification::Aids() => write!(f, "aids"),
-            CompoundOperationSpecification::AssaySummary() => write!(f, "assaysummary"),
-            CompoundOperationSpecification::Classification() => write!(f, "classification"),
-            CompoundOperationSpecification::XRefs(x) => write!(f, "xrefs/{}", x),
-            CompoundOperationSpecification::Description() => write!(f, "description"),
-            CompoundOperationSpecification::Conformers() => write!(f, "conformers"),
-            CompoundOperationSpecification::None() => write!(f, ""),
-        }
+    fn type_label(&self) -> String {
+        format!("operation `{self}`")
     }
 }
-
-impl Default for CompoundOperationSpecification {
-    fn default() -> Self {
-        Self::Record()
-    }
-}
-
-impl FromStr for CompoundOperationSpecification {
-    type Err = crate::error::ParseEnumError;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(if s.starts_with("xrefs/") {
-            let inner = s.trim_start_matches("xrefs/");
-            Self::XRefs(XRefs::from_str(inner)?)
-        } else if s.starts_with("property/") {
-            let inner = s.trim_start_matches("property/");
-            Self::Property(CompoundProperty::from_str(inner)?)
-        } else {
-            match s {
-                "record" => Self::Record(),
-                "synonyms" => Self::Synonyms(),
-                "sids" => Self::Sids(),
-                "aids" => Self::Aids(),
-                "cids" => Self::Cids(),
-                "assaysummary" => Self::AssaySummary(),
-                "classification" => Self::Classification(),
-                "description" => Self::Description(),
-                "conformers" => Self::Conformers(),
-                // Invalid pattern
-                _ => Err(crate::error::ParseEnumError::VariantNotFound)?,
-            }
-        })
-    }
-}
-
-/// Operations available for the substance domain.
-#[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
-#[serde(rename_all = "lowercase")]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
-pub enum SubstanceOperationSpecification {
-    /// Retrieve the full substance record (API value: `record`). This is the default.
-    Record(),
-    /// Retrieve substance synonyms (API value: `synonyms`)
-    Synonyms(),
-    /// Retrieve substance IDs (API value: `sids`)
-    Sids(),
-    /// Retrieve associated compound IDs (API value: `cids`)
-    Cids(),
-    /// Retrieve associated assay IDs (API value: `aids`)
-    Aids(),
-    /// Retrieve assay summary (API value: `assaysummary`)
-    AssaySummary(),
-    /// Retrieve classification hierarchy (API value: `classification`)
-    Classification(),
-    /// Retrieve cross-references (API path: `xrefs/<types>`)
-    XRefs(XRefs),
-    /// Retrieve substance description (API value: `description`)
-    Description(),
-}
-
-impl std::fmt::Display for SubstanceOperationSpecification {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            SubstanceOperationSpecification::Record() => write!(f, "record"),
-            SubstanceOperationSpecification::Synonyms() => write!(f, "synonyms"),
-            SubstanceOperationSpecification::Sids() => write!(f, "sids"),
-            SubstanceOperationSpecification::Cids() => write!(f, "cids"),
-            SubstanceOperationSpecification::Aids() => write!(f, "aids"),
-            SubstanceOperationSpecification::AssaySummary() => write!(f, "assaysummary"),
-            SubstanceOperationSpecification::Classification() => write!(f, "classification"),
-            SubstanceOperationSpecification::XRefs(x) => write!(f, "xrefs/{}", x),
-            SubstanceOperationSpecification::Description() => write!(f, "description"),
-        }
-    }
-}
-
-impl Default for SubstanceOperationSpecification {
-    fn default() -> Self {
-        Self::Record()
-    }
-}
-
-impl FromStr for SubstanceOperationSpecification {
-    type Err = crate::error::ParseEnumError;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(if s.starts_with("xrefs/") {
-            let inner = s.trim_start_matches("xrefs/");
-            Self::XRefs(XRefs::from_str(inner)?)
-        } else {
-            match s {
-                "record" => Self::Record(),
-                "synonyms" => Self::Synonyms(),
-                "sids" => Self::Sids(),
-                "aids" => Self::Aids(),
-                "cids" => Self::Cids(),
-                "assaysummary" => Self::AssaySummary(),
-                "classification" => Self::Classification(),
-                "description" => Self::Description(),
-                // Invalid pattern
-                _ => Err(crate::error::ParseEnumError::VariantNotFound)?,
-            }
-        })
-    }
-}
-
-/// Operations available for the assay domain.
-#[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
-#[serde(rename_all = "lowercase")]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
-pub enum AssayOperationSpecification {
-    /// Retrieve the full assay record (API value: `record`). This is the default.
-    Record(),
-    /// Retrieve concise assay data (API value: `concise`)
-    Concise(),
-    /// Retrieve assay IDs (API value: `aids`)
-    Aids(),
-    /// Retrieve associated compound IDs (API value: `cids`)
-    Cids(),
-    /// Retrieve associated substance IDs (API value: `sids`)
-    Sids(),
-    /// Retrieve assay description (API value: `description`)
-    Description(),
-    /// Retrieve assay targets by type (API path: `targets/<type>`)
-    Targets(AssayOperationTargetType),
-    /// Retrieve dose-response data (API value: `doseresponse/sid`)
-    DoseResponse(),
-    /// Retrieve assay summary (API value: `summary`)
-    Summary(),
-    /// Retrieve classification hierarchy (API value: `classification`)
-    Classification(),
-}
-
-impl std::fmt::Display for AssayOperationSpecification {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            AssayOperationSpecification::Record() => write!(f, "record"),
-            AssayOperationSpecification::Concise() => write!(f, "concise"),
-            AssayOperationSpecification::Aids() => write!(f, "aids"),
-            AssayOperationSpecification::Cids() => write!(f, "cids"),
-            AssayOperationSpecification::Sids() => write!(f, "sids"),
-            AssayOperationSpecification::Description() => write!(f, "description"),
-            AssayOperationSpecification::Targets(t) => write!(f, "targets/{}", t),
-            AssayOperationSpecification::DoseResponse() => write!(f, "doseresponse/sid"),
-            AssayOperationSpecification::Summary() => write!(f, "summary"),
-            AssayOperationSpecification::Classification() => write!(f, "classification"),
-        }
-    }
-}
-
-impl Default for AssayOperationSpecification {
-    fn default() -> Self {
-        Self::Record()
-    }
-}
-
-impl FromStr for AssayOperationSpecification {
-    type Err = crate::error::ParseEnumError;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(if s.starts_with("targets/") {
-            let inner = s.trim_start_matches("targets/");
-            Self::Targets(AssayOperationTargetType::from_str(inner)?)
-        } else {
-            match s {
-                "record" => Self::Record(),
-                "concise" => Self::Concise(),
-                "aids" => Self::Aids(),
-                "cids" => Self::Cids(),
-                "sids" => Self::Sids(),
-                "description" => Self::Description(),
-                "doseresponse/sid" => Self::DoseResponse(),
-                "summary" => Self::Summary(),
-                "classification" => Self::Classification(),
-                // Invalid pattern
-                _ => Err(crate::error::ParseEnumError::VariantNotFound)?,
-            }
-        })
-    }
-}
-
-/// Target type for assay target retrieval operations.
-#[derive(Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
-#[serde(rename_all = "lowercase")]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
-pub enum AssayOperationTargetType {
-    /// Protein GI number (API value: `proteingi`)
-    #[default]
-    ProteinGI,
-    /// Protein name (API value: `proteinname`)
-    ProteinName,
-    /// NCBI gene ID (API value: `geneid`)
-    GeneID,
-    /// Gene symbol (API value: `genesymbol`)
-    GeneSymbol,
-}
-
-impl_enum_str!(AssayOperationTargetType {
-    ProteinGI => "proteingi",
-    ProteinName => "proteinname",
-    GeneID => "geneid",
-    GeneSymbol => "genesymbol",
-});
-
-/// Operations available for the gene domain.
-#[derive(Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
-#[serde(rename_all = "lowercase")]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
-pub enum GeneOperationSpecification {
-    /// Retrieve gene summary (API value: `summary`)
-    #[default]
-    Summary,
-    /// Retrieve associated assay IDs (API value: `aids`)
-    Aids,
-    /// Retrieve concise gene data (API value: `concise`)
-    Concise,
-    /// Retrieve pathway accessions (API value: `pwaccs`)
-    Pwaccs,
-}
-
-impl_enum_str!(GeneOperationSpecification {
-    Summary => "summary",
-    Aids => "aids",
-    Concise => "concise",
-    Pwaccs => "pwaccs",
-});
-
-/// Operations available for the protein domain.
-#[derive(Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
-#[serde(rename_all = "lowercase")]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
-pub enum ProteinOperationSpecification {
-    /// Retrieve protein summary (API value: `summary`)
-    #[default]
-    Summary,
-    /// Retrieve associated assay IDs (API value: `aids`)
-    Aids,
-    /// Retrieve concise protein data (API value: `concise`)
-    Concise,
-    /// Retrieve pathway accessions (API value: `pwaccs`)
-    Pwaccs,
-}
-
-impl_enum_str!(ProteinOperationSpecification {
-    Summary => "summary",
-    Aids => "aids",
-    Concise => "concise",
-    Pwaccs => "pwaccs",
-});
-
-/// Operations available for the pathway domain.
-#[derive(Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
-#[serde(rename_all = "lowercase")]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
-pub enum PathWayOperationSpecification {
-    /// Retrieve pathway summary (API value: `summary`)
-    #[default]
-    Summary,
-    /// Retrieve associated compound IDs (API value: `cids`)
-    Cids,
-    /// Retrieve concise pathway data (API value: `concise`)
-    Concise,
-    /// Retrieve pathway accessions (API value: `pwaccs`)
-    Pwaccs,
-}
-
-impl_enum_str!(PathWayOperationSpecification {
-    Summary => "summary",
-    Cids => "cids",
-    Concise => "concise",
-    Pwaccs => "pwaccs",
-});
-
-/// Operations available for the taxonomy domain.
-#[derive(Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
-#[serde(rename_all = "lowercase")]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
-pub enum TaxonomyOperationSpecification {
-    /// Retrieve taxonomy summary (API value: `summary`)
-    #[default]
-    Summary,
-    /// Retrieve associated assay IDs (API value: `aids`)
-    Aids,
-}
-
-impl_enum_str!(TaxonomyOperationSpecification {
-    Summary => "summary",
-    Aids => "aids",
-});
-
-/// Operations available for the cell line domain.
-#[derive(Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
-#[serde(rename_all = "lowercase")]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
-pub enum CellOperationSpecification {
-    /// Retrieve cell line summary (API value: `summary`)
-    #[default]
-    Summary,
-    /// Retrieve associated assay IDs (API value: `aids`)
-    Aids,
-}
-
-impl_enum_str!(CellOperationSpecification {
-    Summary => "summary",
-    Aids => "aids",
-});
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::requests::input::DomainOtherInputs;
 
-    // CompoundOperationSpecification tests
     #[test]
-    fn test_compound_operation_parse_basic() {
-        assert_eq!(
-            CompoundOperationSpecification::from_str("record").unwrap(),
-            CompoundOperationSpecification::Record()
-        );
-        assert_eq!(
-            CompoundOperationSpecification::from_str("synonyms").unwrap(),
-            CompoundOperationSpecification::Synonyms()
-        );
-        assert_eq!(
-            CompoundOperationSpecification::from_str("sids").unwrap(),
-            CompoundOperationSpecification::Sids()
-        );
-        assert_eq!(
-            CompoundOperationSpecification::from_str("cids").unwrap(),
-            CompoundOperationSpecification::Cids()
-        );
-        assert_eq!(
-            CompoundOperationSpecification::from_str("aids").unwrap(),
-            CompoundOperationSpecification::Aids()
-        );
-        assert_eq!(
-            CompoundOperationSpecification::from_str("assaysummary").unwrap(),
-            CompoundOperationSpecification::AssaySummary()
-        );
-        assert_eq!(
-            CompoundOperationSpecification::from_str("classification").unwrap(),
-            CompoundOperationSpecification::Classification()
-        );
-        assert_eq!(
-            CompoundOperationSpecification::from_str("description").unwrap(),
-            CompoundOperationSpecification::Description()
-        );
-        assert_eq!(
-            CompoundOperationSpecification::from_str("conformers").unwrap(),
-            CompoundOperationSpecification::Conformers()
-        );
+    fn test_operation_domain_compatible_valid_pairs() {
+        let valid_pairs: Vec<(Operation, Domain)> = vec![
+            (
+                CompoundOperationSpecification::Record().into(),
+                Domain::Compound(),
+            ),
+            (
+                SubstanceOperationSpecification::Record().into(),
+                Domain::Substance(),
+            ),
+            (
+                AssayOperationSpecification::Record().into(),
+                Domain::Assay(),
+            ),
+            (GeneOperationSpecification::Summary.into(), Domain::Gene()),
+            (
+                ProteinOperationSpecification::Summary.into(),
+                Domain::Protein(),
+            ),
+            (
+                PathWayOperationSpecification::Summary.into(),
+                Domain::PathWay(),
+            ),
+            (
+                TaxonomyOperationSpecification::Summary.into(),
+                Domain::Taxonomy(),
+            ),
+            (CellOperationSpecification::Summary.into(), Domain::Cell()),
+            (
+                Operation::OtherInput(),
+                Domain::Others(DomainOtherInputs::SourcesSubstances),
+            ),
+        ];
+        for (op, domain) in &valid_pairs {
+            assert!(
+                op.is_compatible_with_domain(domain),
+                "expected {op} compatible with {domain}"
+            );
+            assert!(op.validate_with_domain(domain).is_ok());
+        }
     }
 
     #[test]
-    fn test_compound_operation_parse_property() {
-        assert_eq!(
-            CompoundOperationSpecification::from_str("property/MolecularFormula").unwrap(),
-            CompoundOperationSpecification::Property(
-                CompoundProperty::from_str("MolecularFormula").unwrap()
-            )
-        );
-        assert_eq!(
-            CompoundOperationSpecification::from_str("property/MolecularWeight,IUPACName").unwrap(),
-            CompoundOperationSpecification::Property(
-                CompoundProperty::from_str("MolecularWeight,IUPACName").unwrap()
-            )
-        );
+    fn test_operation_domain_compatible_invalid_pairs() {
+        let compound_op: Operation = CompoundOperationSpecification::Record().into();
+        assert!(!compound_op.is_compatible_with_domain(&Domain::Substance()));
+        assert!(!compound_op.is_compatible_with_domain(&Domain::Assay()));
+        assert!(!compound_op.is_compatible_with_domain(&Domain::Gene()));
+
+        let err = compound_op
+            .validate_with_domain(&Domain::Substance())
+            .unwrap_err();
+        let msg = err.to_string();
+        assert!(msg.contains("not compatible with domain"), "got: {msg}");
+        assert!(msg.contains("substance"), "got: {msg}");
     }
 
-    #[test]
-    fn test_compound_operation_parse_xrefs() {
-        assert_eq!(
-            CompoundOperationSpecification::from_str("xrefs/resigtryid").unwrap(),
-            CompoundOperationSpecification::XRefs(XRefs::from_str("resigtryid").unwrap())
-        );
-    }
-
-    #[test]
-    fn test_compound_operation_parse_invalid() {
-        assert!(CompoundOperationSpecification::from_str("invalid").is_err());
-        assert!(CompoundOperationSpecification::from_str("RECORD").is_err()); // Case sensitive
-    }
-
-    #[test]
-    fn test_compound_operation_display() {
-        assert_eq!(
-            CompoundOperationSpecification::Record().to_string(),
-            "record"
-        );
-        assert_eq!(
-            CompoundOperationSpecification::Synonyms().to_string(),
-            "synonyms"
-        );
-        assert_eq!(
-            CompoundOperationSpecification::Property(
-                CompoundProperty::from_str("MolecularFormula").unwrap()
-            )
-            .to_string(),
-            "property/MolecularFormula"
-        );
-        assert_eq!(
-            CompoundOperationSpecification::XRefs(XRefs::from_str("resigtryid").unwrap())
-                .to_string(),
-            "xrefs/resigtryid"
-        );
-    }
-
-    #[test]
-    fn test_compound_operation_default() {
-        assert_eq!(
-            CompoundOperationSpecification::default(),
-            CompoundOperationSpecification::Record()
-        );
-    }
-
-    // SubstanceOperationSpecification tests
-    #[test]
-    fn test_substance_operation_parse_basic() {
-        assert_eq!(
-            SubstanceOperationSpecification::from_str("record").unwrap(),
-            SubstanceOperationSpecification::Record()
-        );
-        assert_eq!(
-            SubstanceOperationSpecification::from_str("synonyms").unwrap(),
-            SubstanceOperationSpecification::Synonyms()
-        );
-        assert_eq!(
-            SubstanceOperationSpecification::from_str("sids").unwrap(),
-            SubstanceOperationSpecification::Sids()
-        );
-        assert_eq!(
-            SubstanceOperationSpecification::from_str("cids").unwrap(),
-            SubstanceOperationSpecification::Cids()
-        );
-        assert_eq!(
-            SubstanceOperationSpecification::from_str("aids").unwrap(),
-            SubstanceOperationSpecification::Aids()
-        );
-        assert_eq!(
-            SubstanceOperationSpecification::from_str("assaysummary").unwrap(),
-            SubstanceOperationSpecification::AssaySummary()
-        );
-        assert_eq!(
-            SubstanceOperationSpecification::from_str("classification").unwrap(),
-            SubstanceOperationSpecification::Classification()
-        );
-        assert_eq!(
-            SubstanceOperationSpecification::from_str("description").unwrap(),
-            SubstanceOperationSpecification::Description()
-        );
-    }
-
-    #[test]
-    fn test_substance_operation_parse_xrefs() {
-        assert_eq!(
-            SubstanceOperationSpecification::from_str("xrefs/resigtryid").unwrap(),
-            SubstanceOperationSpecification::XRefs(XRefs::from_str("resigtryid").unwrap())
-        );
-    }
-
-    #[test]
-    fn test_substance_operation_default() {
-        assert_eq!(
-            SubstanceOperationSpecification::default(),
-            SubstanceOperationSpecification::Record()
-        );
-    }
-
-    // AssayOperationSpecification tests
-    #[test]
-    fn test_assay_operation_parse_basic() {
-        assert_eq!(
-            AssayOperationSpecification::from_str("record").unwrap(),
-            AssayOperationSpecification::Record()
-        );
-        assert_eq!(
-            AssayOperationSpecification::from_str("concise").unwrap(),
-            AssayOperationSpecification::Concise()
-        );
-        assert_eq!(
-            AssayOperationSpecification::from_str("aids").unwrap(),
-            AssayOperationSpecification::Aids()
-        );
-        assert_eq!(
-            AssayOperationSpecification::from_str("cids").unwrap(),
-            AssayOperationSpecification::Cids()
-        );
-        assert_eq!(
-            AssayOperationSpecification::from_str("sids").unwrap(),
-            AssayOperationSpecification::Sids()
-        );
-        assert_eq!(
-            AssayOperationSpecification::from_str("description").unwrap(),
-            AssayOperationSpecification::Description()
-        );
-        assert_eq!(
-            AssayOperationSpecification::from_str("doseresponse/sid").unwrap(),
-            AssayOperationSpecification::DoseResponse()
-        );
-        assert_eq!(
-            AssayOperationSpecification::from_str("summary").unwrap(),
-            AssayOperationSpecification::Summary()
-        );
-        assert_eq!(
-            AssayOperationSpecification::from_str("classification").unwrap(),
-            AssayOperationSpecification::Classification()
-        );
-    }
-
-    #[test]
-    fn test_assay_operation_parse_targets() {
-        assert_eq!(
-            AssayOperationSpecification::from_str("targets/proteingi").unwrap(),
-            AssayOperationSpecification::Targets(AssayOperationTargetType::ProteinGI)
-        );
-        assert_eq!(
-            AssayOperationSpecification::from_str("targets/proteinname").unwrap(),
-            AssayOperationSpecification::Targets(AssayOperationTargetType::ProteinName)
-        );
-        assert_eq!(
-            AssayOperationSpecification::from_str("targets/geneid").unwrap(),
-            AssayOperationSpecification::Targets(AssayOperationTargetType::GeneID)
-        );
-        assert_eq!(
-            AssayOperationSpecification::from_str("targets/genesymbol").unwrap(),
-            AssayOperationSpecification::Targets(AssayOperationTargetType::GeneSymbol)
-        );
-    }
-
-    #[test]
-    fn test_assay_operation_default() {
-        assert_eq!(
-            AssayOperationSpecification::default(),
-            AssayOperationSpecification::Record()
-        );
-    }
-
-    // AssayOperationTargetType tests
-    #[test]
-    fn test_assay_operation_target_type_parse() {
-        assert_eq!(
-            AssayOperationTargetType::from_str("proteingi").unwrap(),
-            AssayOperationTargetType::ProteinGI
-        );
-        assert_eq!(
-            AssayOperationTargetType::from_str("proteinname").unwrap(),
-            AssayOperationTargetType::ProteinName
-        );
-        assert_eq!(
-            AssayOperationTargetType::from_str("geneid").unwrap(),
-            AssayOperationTargetType::GeneID
-        );
-        assert_eq!(
-            AssayOperationTargetType::from_str("genesymbol").unwrap(),
-            AssayOperationTargetType::GeneSymbol
-        );
-    }
-
-    #[test]
-    fn test_assay_operation_target_type_display() {
-        assert_eq!(AssayOperationTargetType::ProteinGI.to_string(), "proteingi");
-        assert_eq!(
-            AssayOperationTargetType::ProteinName.to_string(),
-            "proteinname"
-        );
-        assert_eq!(AssayOperationTargetType::GeneID.to_string(), "geneid");
-        assert_eq!(
-            AssayOperationTargetType::GeneSymbol.to_string(),
-            "genesymbol"
-        );
-    }
-
-    #[test]
-    fn test_assay_operation_target_type_default() {
-        assert_eq!(
-            AssayOperationTargetType::default(),
-            AssayOperationTargetType::ProteinGI
-        );
-    }
-
-    // GeneOperationSpecification tests
-    #[test]
-    fn test_gene_operation_parse() {
-        assert_eq!(
-            GeneOperationSpecification::from_str("summary").unwrap(),
-            GeneOperationSpecification::Summary
-        );
-        assert_eq!(
-            GeneOperationSpecification::from_str("aids").unwrap(),
-            GeneOperationSpecification::Aids
-        );
-        assert_eq!(
-            GeneOperationSpecification::from_str("concise").unwrap(),
-            GeneOperationSpecification::Concise
-        );
-        assert_eq!(
-            GeneOperationSpecification::from_str("pwaccs").unwrap(),
-            GeneOperationSpecification::Pwaccs
-        );
-    }
-
-    #[test]
-    fn test_gene_operation_display() {
-        assert_eq!(GeneOperationSpecification::Summary.to_string(), "summary");
-        assert_eq!(GeneOperationSpecification::Aids.to_string(), "aids");
-        assert_eq!(GeneOperationSpecification::Concise.to_string(), "concise");
-        assert_eq!(GeneOperationSpecification::Pwaccs.to_string(), "pwaccs");
-    }
-
-    #[test]
-    fn test_gene_operation_default() {
-        assert_eq!(
-            GeneOperationSpecification::default(),
-            GeneOperationSpecification::Summary
-        );
-    }
-
-    // ProteinOperationSpecification tests
-    #[test]
-    fn test_protein_operation_parse() {
-        assert_eq!(
-            ProteinOperationSpecification::from_str("summary").unwrap(),
-            ProteinOperationSpecification::Summary
-        );
-        assert_eq!(
-            ProteinOperationSpecification::from_str("aids").unwrap(),
-            ProteinOperationSpecification::Aids
-        );
-        assert_eq!(
-            ProteinOperationSpecification::from_str("concise").unwrap(),
-            ProteinOperationSpecification::Concise
-        );
-        assert_eq!(
-            ProteinOperationSpecification::from_str("pwaccs").unwrap(),
-            ProteinOperationSpecification::Pwaccs
-        );
-    }
-
-    #[test]
-    fn test_protein_operation_default() {
-        assert_eq!(
-            ProteinOperationSpecification::default(),
-            ProteinOperationSpecification::Summary
-        );
-    }
-
-    // PathWayOperationSpecification tests
-    #[test]
-    fn test_pathway_operation_parse() {
-        assert_eq!(
-            PathWayOperationSpecification::from_str("summary").unwrap(),
-            PathWayOperationSpecification::Summary
-        );
-        assert_eq!(
-            PathWayOperationSpecification::from_str("cids").unwrap(),
-            PathWayOperationSpecification::Cids
-        );
-        assert_eq!(
-            PathWayOperationSpecification::from_str("concise").unwrap(),
-            PathWayOperationSpecification::Concise
-        );
-        assert_eq!(
-            PathWayOperationSpecification::from_str("pwaccs").unwrap(),
-            PathWayOperationSpecification::Pwaccs
-        );
-    }
-
-    #[test]
-    fn test_pathway_operation_default() {
-        assert_eq!(
-            PathWayOperationSpecification::default(),
-            PathWayOperationSpecification::Summary
-        );
-    }
-
-    // TaxonomyOperationSpecification tests
-    #[test]
-    fn test_taxonomy_operation_parse() {
-        assert_eq!(
-            TaxonomyOperationSpecification::from_str("summary").unwrap(),
-            TaxonomyOperationSpecification::Summary
-        );
-        assert_eq!(
-            TaxonomyOperationSpecification::from_str("aids").unwrap(),
-            TaxonomyOperationSpecification::Aids
-        );
-    }
-
-    #[test]
-    fn test_taxonomy_operation_default() {
-        assert_eq!(
-            TaxonomyOperationSpecification::default(),
-            TaxonomyOperationSpecification::Summary
-        );
-    }
-
-    // CellOperationSpecification tests
-    #[test]
-    fn test_cell_operation_parse() {
-        assert_eq!(
-            CellOperationSpecification::from_str("summary").unwrap(),
-            CellOperationSpecification::Summary
-        );
-        assert_eq!(
-            CellOperationSpecification::from_str("aids").unwrap(),
-            CellOperationSpecification::Aids
-        );
-    }
-
-    #[test]
-    fn test_cell_operation_default() {
-        assert_eq!(
-            CellOperationSpecification::default(),
-            CellOperationSpecification::Summary
-        );
-    }
-
-    // Operation tests
     #[test]
     fn test_operation_from_str() {
-        // Compound
         assert_eq!(
             Operation::from_str("record").unwrap(),
             Operation::Compound(CompoundOperationSpecification::Record())
         );
-
-        // Assay (has unique 'concise')
         assert_eq!(
             Operation::from_str("concise").unwrap(),
             Operation::Assay(AssayOperationSpecification::Concise())
@@ -976,7 +302,6 @@ mod tests {
 
     #[test]
     fn test_operation_from_str_with_domain() {
-        // Compound domain
         assert_eq!(
             Operation::from_str_with_domain(&Domain::Compound(), "record").unwrap(),
             Operation::Compound(CompoundOperationSpecification::Record())
@@ -985,14 +310,10 @@ mod tests {
             Operation::from_str_with_domain(&Domain::Compound(), "synonyms").unwrap(),
             Operation::Compound(CompoundOperationSpecification::Synonyms())
         );
-
-        // Substance domain
         assert_eq!(
             Operation::from_str_with_domain(&Domain::Substance(), "record").unwrap(),
             Operation::Substance(SubstanceOperationSpecification::Record())
         );
-
-        // Assay domain
         assert_eq!(
             Operation::from_str_with_domain(&Domain::Assay(), "record").unwrap(),
             Operation::Assay(AssayOperationSpecification::Record())
@@ -1001,32 +322,22 @@ mod tests {
             Operation::from_str_with_domain(&Domain::Assay(), "concise").unwrap(),
             Operation::Assay(AssayOperationSpecification::Concise())
         );
-
-        // Gene domain
         assert_eq!(
             Operation::from_str_with_domain(&Domain::Gene(), "summary").unwrap(),
             Operation::Gene(GeneOperationSpecification::Summary)
         );
-
-        // Protein domain
         assert_eq!(
             Operation::from_str_with_domain(&Domain::Protein(), "summary").unwrap(),
             Operation::Protein(ProteinOperationSpecification::Summary)
         );
-
-        // PathWay domain
         assert_eq!(
             Operation::from_str_with_domain(&Domain::PathWay(), "summary").unwrap(),
             Operation::PathWay(PathWayOperationSpecification::Summary)
         );
-
-        // Taxonomy domain
         assert_eq!(
             Operation::from_str_with_domain(&Domain::Taxonomy(), "summary").unwrap(),
             Operation::Taxonomy(TaxonomyOperationSpecification::Summary)
         );
-
-        // Cell domain
         assert_eq!(
             Operation::from_str_with_domain(&Domain::Cell(), "summary").unwrap(),
             Operation::Cell(CellOperationSpecification::Summary)

@@ -6,7 +6,7 @@ use crate::requests::common::UrlParts;
 /// API domain specifying the type of PubChem data to query.
 #[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
+#[cfg_attr(feature = "pyo3", pyo3::pyclass(from_py_object))]
 pub enum Domain {
     /// Chemical compound domain (API value: `compound`)
     Compound(),
@@ -81,7 +81,7 @@ impl Default for Domain {
 /// Specialized input domains that do not follow the standard domain/namespace/identifier pattern.
 #[derive(Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
+#[cfg_attr(feature = "pyo3", pyo3::pyclass(from_py_object))]
 pub enum DomainOtherInputs {
     /// List all substance data sources (API path: `sources/substance`)
     #[default]

@@ -3,7 +3,7 @@ use crate::requests::input::Namespace;
 /// Namespace for the gene domain.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
+#[cfg_attr(feature = "pyo3", pyo3::pyclass(from_py_object))]
 pub enum GeneNamespace {
     /// NCBI gene ID (API value: `geneid`)
     #[default]
@@ -12,12 +12,15 @@ pub enum GeneNamespace {
     GeneSymbol,
     /// GenBank/RefSeq accession (API value: `accession`)
     Accession,
+    /// Gene synonym (API value: `synonym`)
+    Synonym,
 }
 
 impl_enum_str!(GeneNamespace {
     GeneID => "geneid",
     GeneSymbol => "genesymbol",
     Accession => "accession",
+    Synonym => "synonym",
 });
 
 impl From<GeneNamespace> for Namespace {
@@ -29,21 +32,21 @@ impl From<GeneNamespace> for Namespace {
 /// Namespace for the protein domain.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
+#[cfg_attr(feature = "pyo3", pyo3::pyclass(from_py_object))]
 pub enum ProteinNamespace {
     /// Protein accession number (API value: `accession`)
     #[default]
     Accession,
     /// NCBI protein GI number (API value: `gi`)
     GI,
-    /// Protein synonym (API value: `synonim`)
-    Synonim,
+    /// Protein synonym (API value: `synonym`)
+    Synonym,
 }
 
 impl_enum_str!(ProteinNamespace {
     Accession => "accession",
     GI => "gi",
-    Synonim => "synonim",
+    Synonym => "synonym",
 });
 
 impl From<ProteinNamespace> for Namespace {
@@ -55,7 +58,7 @@ impl From<ProteinNamespace> for Namespace {
 /// Namespace for the pathway domain.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
+#[cfg_attr(feature = "pyo3", pyo3::pyclass(from_py_object))]
 pub enum PathWayNamespace {
     /// Pathway accession number (API value: `pwacc`)
     #[default]
@@ -75,18 +78,18 @@ impl From<PathWayNamespace> for Namespace {
 /// Namespace for the taxonomy domain.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
+#[cfg_attr(feature = "pyo3", pyo3::pyclass(from_py_object))]
 pub enum TaxonomyNamespace {
     /// NCBI taxonomy ID (API value: `taxid`)
     #[default]
     TaxID,
-    /// Taxonomy synonym (API value: `synonim`)
-    Synonim,
+    /// Taxonomy synonym (API value: `synonym`)
+    Synonym,
 }
 
 impl_enum_str!(TaxonomyNamespace {
     TaxID => "taxid",
-    Synonim => "synonim",
+    Synonym => "synonym",
 });
 
 impl From<TaxonomyNamespace> for Namespace {
@@ -98,18 +101,18 @@ impl From<TaxonomyNamespace> for Namespace {
 /// Namespace for the cell line domain.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
+#[cfg_attr(feature = "pyo3", pyo3::pyclass(from_py_object))]
 pub enum CellNamespace {
     /// Cell line accession number (API value: `cellacc`)
     #[default]
     CellAcc,
-    /// Cell line synonym (API value: `synonim`)
-    Synonim,
+    /// Cell line synonym (API value: `synonym`)
+    Synonym,
 }
 
 impl_enum_str!(CellNamespace {
     CellAcc => "cellacc",
-    Synonim => "synonim",
+    Synonym => "synonym",
 });
 
 impl From<CellNamespace> for Namespace {
@@ -138,6 +141,10 @@ mod tests {
             GeneNamespace::from_str("accession").unwrap(),
             GeneNamespace::Accession
         );
+        assert_eq!(
+            GeneNamespace::from_str("synonym").unwrap(),
+            GeneNamespace::Synonym
+        );
     }
 
     // ProteinNamespace tests
@@ -152,8 +159,8 @@ mod tests {
             ProteinNamespace::GI
         );
         assert_eq!(
-            ProteinNamespace::from_str("synonim").unwrap(),
-            ProteinNamespace::Synonim
+            ProteinNamespace::from_str("synonym").unwrap(),
+            ProteinNamespace::Synonym
         );
     }
 
@@ -174,8 +181,8 @@ mod tests {
             TaxonomyNamespace::TaxID
         );
         assert_eq!(
-            TaxonomyNamespace::from_str("synonim").unwrap(),
-            TaxonomyNamespace::Synonim
+            TaxonomyNamespace::from_str("synonym").unwrap(),
+            TaxonomyNamespace::Synonym
         );
     }
 
@@ -187,8 +194,8 @@ mod tests {
             CellNamespace::CellAcc
         );
         assert_eq!(
-            CellNamespace::from_str("synonim").unwrap(),
-            CellNamespace::Synonim
+            CellNamespace::from_str("synonym").unwrap(),
+            CellNamespace::Synonym
         );
     }
 }

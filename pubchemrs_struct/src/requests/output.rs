@@ -6,7 +6,7 @@ use std::str::FromStr;
 
 /// Output format for API responses.
 #[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass)]
+#[cfg_attr(feature = "pyo3", pyo3::pyclass(from_py_object))]
 pub enum OutputFormat {
     /// XML format (API value: `XML`)
     XML(),
