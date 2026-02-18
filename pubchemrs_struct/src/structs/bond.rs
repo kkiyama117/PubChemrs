@@ -1,9 +1,9 @@
 use crate::error::PubChemError;
 
 #[cfg(feature = "pyo3")]
-use pyo3::{IntoPyObject, Py, PyAny, PyErr, PyResult, Python, pymethods};
-#[cfg(feature = "pyo3")]
 use pyo3::types::{PyAnyMethods, PyDict, PyDictMethods};
+#[cfg(feature = "pyo3")]
+use pyo3::{IntoPyObject, Py, PyAny, PyErr, PyResult, Python, pymethods};
 
 /// A chemical bond between two atoms.
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
@@ -112,7 +112,10 @@ impl Bond {
     }
 
     fn __repr__(&self) -> String {
-        format!("Bond({}, {}, BondType.{})", self.aid1, self.aid2, self.order)
+        format!(
+            "Bond({}, {}, BondType.{})",
+            self.aid1, self.aid2, self.order
+        )
     }
 
     fn __eq__(&self, other: &Self) -> bool {
