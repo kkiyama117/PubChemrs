@@ -45,6 +45,7 @@ pub struct Compound {
     pub coords: Vec<CoordsInner>,
     /// Counts of various structural features (chiral atoms, heavy atoms, etc.).
     /// Absent in some 3D records.
+    #[serde(default)]
     pub count: Option<CompoundTCount>,
     /// Compound identifier (CID).
     #[serde(rename = "id")]

@@ -1,7 +1,7 @@
 use std::sync::OnceLock;
 use std::time::Duration;
 
-use pubchemrs_struct::requests::url_builder::{PUBCHEM_API_BASE, UrlBuilder};
+use pubchemrs_struct::requests::url_builder::UrlBuilder;
 use pubchemrs_struct::response::PubChemResponse;
 
 use crate::error::{Error, Result};
@@ -65,12 +65,7 @@ impl PubChemClient {
     /// Build the full URL and optional POST body from a `UrlBuilder`.
     fn build_request_parts(url_builder: &UrlBuilder) -> Result<(String, Option<String>)> {
         let built = url_builder.build_url_parts()?;
-        let mut url = format!("{}/{}", PUBCHEM_API_BASE, built.path_segments.join("/"));
-        if let Some(qs) = built.query_string {
-            url.push('?');
-            url.push_str(&qs);
-        }
-        Ok((url, built.post_body))
+        Ok((built.to_full_url(), built.post_body))
     }
 
     /// Send a raw HTTP request with automatic GET/POST selection and retry.
@@ -203,6 +198,7 @@ struct FaultInner {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use pubchemrs_struct::requests::url_builder::PUBCHEM_API_BASE;
 
     #[test]
     fn test_default_config() {
