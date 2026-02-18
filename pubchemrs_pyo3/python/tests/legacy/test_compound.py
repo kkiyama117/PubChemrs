@@ -67,7 +67,7 @@ def test_bonds_deprecated(c1):
     with warnings.catch_warnings(record=True) as w:
         assert {b["order"] for b in c1.bonds} == {BondType.SINGLE, BondType.DOUBLE}
         assert len(w) == 1
-        assert w[0].category == PubChemPyDeprecationWarning
+        assert w[0].category == DeprecationWarning
         expected_message = (
             "__getitem__ is deprecated: Dictionary style access to Bond attributes is "
             "deprecated"

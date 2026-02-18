@@ -21,6 +21,7 @@ fn _pubchemrs(m: &Bound<'_, PyModule>) -> PyResult<()> {
 
     // Register struct types
     m.add_class::<pubchemrs_struct::structs::Atom>()?;
+    m.add_class::<pubchemrs_struct::structs::Bond>()?;
     m.add_class::<pubchemrs_struct::structs::Element>()?;
 
     // Register Rust enum types (with eq_int for IntEnum interop)
