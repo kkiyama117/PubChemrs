@@ -160,3 +160,29 @@ Contains 8 domain-specific operation enums + `Operation` wrapper + all `From` im
 3. `cargo doc --no-deps` — zero warnings
 4. PubChem API conformance checklist (see each phase above)
 5. Public API changes: only `setup_atoms`/`setup_bonds` removed (replaced by `TryFrom`), `as_dataframe` removed, `set_style` → `with_style`
+
+---
+
+## TODO: Existing pytest failures
+
+The following 6 Python test failures exist independently of the refactoring work above and need to be addressed separately.
+
+### 3D Compound tests (`test_compound3d.py`) — 5 failures
+
+CID 1234 is used as a 3D compound fixture but the PubChem API currently returns 2D-only data for it.
+
+- [ ] **test_properties_types** — `c3d.volume_3d` returns `None` (expects `float`). The API no longer returns 3D conformer data with `Volume` for this CID.
+- [ ] **test_coordinate_type** — `c3d.coordinate_type` returns `"2d"` (expects `"3d"`). The API returns `CoordinateType.TWO_D` instead of `THREE_D`.
+- [ ] **test_coordinates** — `a.z` is `None` for all atoms (expects `float | int`). No z-coordinates in the 2D response.
+- [ ] **test_coordinates_deprecated** — Same root cause as test_coordinates, via deprecated dict-access API.
+- [ ] **test_atoms_deprecated** — `w[0].category` is `DeprecationWarning` (expects `PubChemPyDeprecationWarning`). The Rust `Atom.__getitem__` uses the built-in `DeprecationWarning` instead of the custom warning class.
+
+**Possible fixes:**
+1. Replace CID 1234 with a CID that reliably has 3D conformer data, or use a local fixture file.
+2. For the deprecation warning mismatch: update Rust `Atom` to emit `PubChemPyDeprecationWarning`, or update the test expectation.
+
+### Formula search (`test_pandas.py`) — 1 failure
+
+- [ ] **test_compounds_dataframe** — `get_compounds("C20H41Br", "formula")` raises `ValueError: unknown variant 'Waiting'`. The Rust `PubChemResponse` enum does not handle the `Waiting` (listkey polling) response from formula searches.
+
+**Possible fix:** Add a `Waiting` variant to `PubChemResponse` and implement listkey polling in the Rust client, or fall back to the legacy HTTP path for formula namespace (as is already done for `searchtype`).
