@@ -38,12 +38,14 @@ pub struct Compound {
     /// Bonds between atoms.
     /// The response of bonds is not useful by used as it is, so we need to convert them when using.
     pub bonds: Option<BondInner>,
-    /// The total (or net) charge of a molecule.
-    pub charge: i32,
+    /// The total (or net) charge of a molecule (absent in some 3D records).
+    #[serde(default)]
+    pub charge: Option<i32>,
     /// Coordinate sets for atom positions.
     pub coords: Vec<CoordsInner>,
     /// Counts of various structural features (chiral atoms, heavy atoms, etc.).
-    pub count: CompoundTCount,
+    /// Absent in some 3D records.
+    pub count: Option<CompoundTCount>,
     /// Compound identifier (CID).
     #[serde(rename = "id")]
     pub cid: Option<CompoundID>,

@@ -1,4 +1,5 @@
 use super::conformer::ConformerInner;
+use super::others::CompoundProps;
 
 /// Raw coordinate set from a PubChem compound record.
 ///
@@ -10,6 +11,9 @@ pub struct CoordsInner {
     pub aid: Vec<u32>,
     /// Conformer data with x/y/z positions.
     pub conformers: Vec<ConformerInner>,
+    /// Coordinate-level property data (e.g. Conformer RMSD in 3D records).
+    #[serde(default)]
+    pub data: Option<Vec<CompoundProps>>,
     /// Coordinate type flags (2D, 3D, units, etc.).
     #[serde(rename = "type")]
     _type: Vec<u32>,

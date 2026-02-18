@@ -156,9 +156,13 @@ mod tests {
 
     /// Helper to build URL from a UrlBuilder and verify it.
     fn build_url(builder: &UrlBuilder) -> (String, Option<String>) {
-        let (parts, body) = builder.build_url_parts().unwrap();
-        let url = format!("{}/{}", PUBCHEM_API_BASE, parts.join("/"));
-        (url, body)
+        let built = builder.build_url_parts().unwrap();
+        let mut url = format!("{}/{}", PUBCHEM_API_BASE, built.path_segments.join("/"));
+        if let Some(qs) = built.query_string {
+            url.push('?');
+            url.push_str(&qs);
+        }
+        (url, built.post_body)
     }
 
     #[test]

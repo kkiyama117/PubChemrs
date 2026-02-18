@@ -287,11 +287,14 @@ def deprecated(message: str) -> t.Callable[[t.Callable], t.Callable]:
 def _get_compounds_via_rust(
     identifier: str | int | list[str | int],
     namespace: str,
+    **kwargs: QueryParam,
 ) -> list:
     """Fetch compound records using the Rust backend and convert to legacy Compound objects."""
     client = _rust_client()
+    # Convert kwargs values to strings for the Rust client
+    str_kwargs = {k: str(v) for k, v in kwargs.items() if v is not None}
     try:
-        rust_compounds = client.get_compounds_sync(identifier, namespace)
+        rust_compounds = client.get_compounds_sync(identifier, namespace, **str_kwargs)
     except _RustNotFoundError:
         return []
     except _RustPubChemAPIError as e:
@@ -398,16 +401,7 @@ class Compound:
         """
         from pubchemrs.legacy import NotFoundError
 
-        if kwargs:
-            # Fall back to legacy HTTP for unsupported params (e.g. record_type=3d)
-            from pubchemrs.legacy import get_json
-
-            results = get_json(cid, **kwargs)
-            if results and "PC_Compounds" in results:
-                return cls(results["PC_Compounds"][0])
-            raise NotFoundError(404, "Not Found", [f"No compound found for CID {cid}"])
-
-        compounds = _get_compounds_via_rust(cid, "cid")
+        compounds = _get_compounds_via_rust(cid, "cid", **kwargs)
         if not compounds:
             raise NotFoundError(404, "Not Found", [f"No compound found for CID {cid}"])
         return compounds[0]

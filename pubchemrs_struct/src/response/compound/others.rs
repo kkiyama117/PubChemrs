@@ -41,10 +41,15 @@ pub enum PropsValue {
     Ival(u32),
     /// Floating-point value.
     Fval(f32),
+    /// Integer vector (e.g. used in 3D records).
+    Ivec(Vec<i32>),
+    /// Floating-point vector (e.g. multipoles in 3D records).
+    Fvec(Vec<f64>),
     /// String value.
     Sval(String),
+    /// String list value (e.g. pharmacophore features, shape fingerprints in 3D records).
+    Slist(Vec<String>),
     /// Binary data encoded as a string.
-    // TODO: Use `binary`
     Binary(String),
 }
 

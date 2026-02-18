@@ -17,7 +17,7 @@ def test_properties_types(c3d):
     assert isinstance(c3d.volume_3d, float)
     assert isinstance(c3d.multipoles_3d, list)
     assert isinstance(c3d.conformer_rmsd_3d, float)
-    assert isinstance(c3d.effective_rotor_count_3d, int)
+    assert isinstance(c3d.effective_rotor_count_3d, (int, float))
     assert isinstance(c3d.pharmacophore_features_3d, list)
     assert isinstance(c3d.mmff94_partial_charges_3d, list)
     assert isinstance(c3d.mmff94_energy_3d, float)
