@@ -16,6 +16,9 @@ pub mod coordinate;
 /// Properties, counts, and stereochemistry.
 pub mod others;
 
+#[cfg(feature = "pyo3")]
+mod py_methods;
+
 use self::atom::AtomInner;
 use self::bond::BondInner;
 use self::coordinate::CoordsInner;

@@ -741,7 +741,6 @@ dependencies = [
  "pubchemrs_tokio",
  "pyo3",
  "pyo3-async-runtimes",
- "serde_json",
  "tokio",
 ]
 

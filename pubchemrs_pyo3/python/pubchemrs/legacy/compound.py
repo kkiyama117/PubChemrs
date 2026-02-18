@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import enum
 import functools
-import json
 import logging
 import typing as t
 import warnings
@@ -12,7 +11,6 @@ from pubchemrs._core import _get_default_client as _rust_client
 from pubchemrs._pubchemrs import Atom
 from pubchemrs._pubchemrs import PubChemAPIError as _RustPubChemAPIError
 from pubchemrs._pubchemrs import PubChemNotFoundError as _RustNotFoundError
-from pubchemrs._pubchemrs import compound_to_json as _compound_to_json
 from pubchemrs.legacy.errors import _rust_api_error_to_legacy
 
 if t.TYPE_CHECKING:
@@ -286,21 +284,6 @@ def deprecated(message: str) -> t.Callable[[t.Callable], t.Callable]:
     return deco
 
 
-def _clean_nulls(obj: t.Any) -> t.Any:
-    """Remove None values from nested dicts to match PubChem JSON format.
-
-    The Rust serde serialization produces ``null`` for ``Option::None`` fields,
-    but the original PubChem JSON simply omits those keys.  Stripping them
-    ensures the legacy ``Compound`` class (which tests for key presence with
-    ``"key" in record``) works correctly.
-    """
-    if isinstance(obj, dict):
-        return {k: _clean_nulls(v) for k, v in obj.items() if v is not None}
-    if isinstance(obj, list):
-        return [_clean_nulls(item) for item in obj]
-    return obj
-
-
 def _get_compounds_via_rust(
     identifier: str | int | list[str | int],
     namespace: str,
@@ -313,7 +296,7 @@ def _get_compounds_via_rust(
         return []
     except _RustPubChemAPIError as e:
         raise _rust_api_error_to_legacy(e) from e
-    return [Compound(_clean_nulls(json.loads(_compound_to_json(c)))) for c in rust_compounds]
+    return [Compound(c.to_dict()) for c in rust_compounds]
 
 
 class Bond:
