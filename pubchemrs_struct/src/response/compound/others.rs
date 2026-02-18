@@ -62,10 +62,11 @@ impl PropsValue {
         }
     }
 
-    /// Extract an f64 value. Fval returns directly, Sval attempts to parse.
+    /// Extract an f64 value. Fval returns directly, Ival is losslessly converted, Sval attempts to parse.
     pub fn as_f64(&self) -> Option<f64> {
         match self {
             PropsValue::Fval(f) => Some(*f),
+            PropsValue::Ival(i) => Some(f64::from(*i)),
             PropsValue::Sval(s) => s.parse().ok(),
             _ => None,
         }
