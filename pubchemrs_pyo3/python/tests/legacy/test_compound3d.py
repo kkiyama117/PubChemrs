@@ -4,7 +4,7 @@ import warnings
 
 import pytest
 
-from pubchemrs.legacy import Compound, PubChemPyDeprecationWarning
+from pubchemrs.legacy import Compound
 
 
 @pytest.fixture
@@ -42,7 +42,7 @@ def test_atoms_deprecated(c3d):
     with warnings.catch_warnings(record=True) as w:
         assert {a["element"] for a in c3d.atoms} == {"C", "H", "O", "N"}
         assert len(w) == 1
-        assert w[0].category == PubChemPyDeprecationWarning
+        assert w[0].category == DeprecationWarning
         expected_message = (
             "__getitem__ is deprecated: Dictionary style access to Atom attributes is "
             "deprecated"
@@ -63,7 +63,7 @@ def test_coordinates_deprecated(c3d):
         assert isinstance(c3d.atoms[0]["y"], (float, int))
         assert isinstance(c3d.atoms[0]["z"], (float, int))
         assert len(w) == 3
-        assert w[0].category == PubChemPyDeprecationWarning
+        assert w[0].category == DeprecationWarning
         expected_message = (
             "__getitem__ is deprecated: Dictionary style access to Atom attributes is "
             "deprecated"

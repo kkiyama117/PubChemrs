@@ -398,6 +398,15 @@ class Compound:
         """
         from pubchemrs.legacy import NotFoundError
 
+        if kwargs:
+            # Fall back to legacy HTTP for unsupported params (e.g. record_type=3d)
+            from pubchemrs.legacy import get_json
+
+            results = get_json(cid, **kwargs)
+            if results and "PC_Compounds" in results:
+                return cls(results["PC_Compounds"][0])
+            raise NotFoundError(404, "Not Found", [f"No compound found for CID {cid}"])
+
         compounds = _get_compounds_via_rust(cid, "cid")
         if not compounds:
             raise NotFoundError(404, "Not Found", [f"No compound found for CID {cid}"])
@@ -986,8 +995,8 @@ def get_compounds(
     """
     from pubchemrs.legacy import get_json
 
-    if searchtype is not None:
-        # Searchtype requires listkey polling; fall back to legacy HTTP
+    if searchtype is not None or namespace == "formula":
+        # Searchtype and formula require listkey polling; fall back to legacy HTTP
         results = get_json(identifier, namespace, searchtype=searchtype, **kwargs)
         compounds = [Compound(r) for r in results["PC_Compounds"]] if results else []
     else:
