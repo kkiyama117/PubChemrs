@@ -1,11 +1,11 @@
 use std::collections::HashMap;
 
-use pyo3::prelude::*;
 use pubchemrs_struct::properties::CompoundProperties;
 use pubchemrs_struct::requests::input::CompoundNamespace;
 use pubchemrs_struct::requests::operation::CompoundPropertyTag;
 use pubchemrs_struct::response::Compound;
 use pubchemrs_tokio::client::{ClientConfig, PubChemClient};
+use pyo3::prelude::*;
 
 use crate::error::to_pyerr;
 
@@ -222,7 +222,9 @@ fn parse_source_domain(domain: Option<&str>) -> Option<pubchemrs_struct::request
     }
 }
 
-fn extract_identifiers(obj: &Bound<'_, PyAny>) -> PyResult<pubchemrs_struct::requests::input::Identifiers> {
+fn extract_identifiers(
+    obj: &Bound<'_, PyAny>,
+) -> PyResult<pubchemrs_struct::requests::input::Identifiers> {
     use pubchemrs_struct::requests::input::Identifiers;
 
     // Try integer (single CID)
