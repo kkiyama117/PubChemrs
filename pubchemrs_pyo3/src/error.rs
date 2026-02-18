@@ -12,13 +12,19 @@ create_exception!(pubchemrs, PubChemNotFoundError, PubChemAPIError);
 pub fn register_exceptions(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add("PubChemError", m.py().get_type::<PubChemError>())?;
     m.add("PubChemAPIError", m.py().get_type::<PubChemAPIError>())?;
-    m.add("PubChemNotFoundError", m.py().get_type::<PubChemNotFoundError>())?;
+    m.add(
+        "PubChemNotFoundError",
+        m.py().get_type::<PubChemNotFoundError>(),
+    )?;
     Ok(())
 }
 
 pub fn to_pyerr(err: Error) -> PyErr {
     match err {
-        Error::ApiFault { ref code, ref message } => {
+        Error::ApiFault {
+            ref code,
+            ref message,
+        } => {
             if code.contains("NotFound") {
                 PubChemNotFoundError::new_err(message.clone())
             } else {
@@ -35,9 +41,7 @@ pub fn to_pyerr(err: Error) -> PyErr {
         }
         Error::Json(e) => PyValueError::new_err(e.to_string()),
         Error::PubChem(e) => match e {
-            pubchemrs_struct::error::PubChemError::InvalidInput(msg) => {
-                PyValueError::new_err(msg)
-            }
+            pubchemrs_struct::error::PubChemError::InvalidInput(msg) => PyValueError::new_err(msg),
             other => PyRuntimeError::new_err(other.to_string()),
         },
     }

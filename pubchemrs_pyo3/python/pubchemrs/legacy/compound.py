@@ -8,7 +8,7 @@ import warnings
 from itertools import zip_longest
 
 from pubchemrs._core import _get_default_client as _rust_client
-from pubchemrs._pubchemrs import Atom
+from pubchemrs._pubchemrs import Atom, Bond
 from pubchemrs._pubchemrs import PubChemAPIError as _RustPubChemAPIError
 from pubchemrs._pubchemrs import PubChemNotFoundError as _RustNotFoundError
 from pubchemrs.legacy.errors import _rust_api_error_to_legacy
@@ -297,79 +297,6 @@ def _get_compounds_via_rust(
     except _RustPubChemAPIError as e:
         raise _rust_api_error_to_legacy(e) from e
     return [Compound(c.to_dict()) for c in rust_compounds]
-
-
-class Bond:
-    """Class to represent a bond between two atoms in a :class:`~pubchempy.Compound`."""
-
-    def __init__(
-        self,
-        aid1: int,
-        aid2: int,
-        order: BondType = BondType.SINGLE,
-        style: int | None = None,
-    ) -> None:
-        """Initialize with begin and end atom IDs, bond order and bond style.
-
-        Args:
-            aid1: Begin atom ID.
-            aid2: End atom ID.
-            order: Bond order.
-            style: Bond style annotation.
-        """
-        self.aid1 = aid1
-        """ID of the begin atom of this bond."""
-        self.aid2 = aid2
-        """ID of the end atom of this bond."""
-        self.order = order
-        """Bond order."""
-        self.style = style
-        """Bond style annotation."""
-
-    def __repr__(self) -> str:
-        return f"Bond({self.aid1!r}, {self.aid2!r}, {self.order!r})"
-
-    def __eq__(self, other: object) -> bool:
-        return (
-            isinstance(other, type(self))
-            and self.aid1 == other.aid1
-            and self.aid2 == other.aid2
-            and self.order == other.order
-            and self.style == other.style
-        )
-
-    @deprecated("Dictionary style access to Bond attributes is deprecated")
-    def __getitem__(self, prop):
-        """Allow dict-style access to attributes for backwards compatibility."""
-        if prop in {"order", "style"}:
-            return getattr(self, prop)
-        raise KeyError(prop)
-
-    @deprecated("Dictionary style access to Bond attributes is deprecated")
-    def __setitem__(self, prop, val):
-        """Allow dict-style setting of attributes for backwards compatibility."""
-        setattr(self, prop, val)
-
-    @deprecated("Dictionary style access to Bond attributes is deprecated")
-    def __contains__(self, prop):
-        """Allow dict-style checking of attributes for backwards compatibility."""
-        if prop in {"order", "style"}:
-            return getattr(self, prop) is not None
-        return False
-
-    @deprecated("Dictionary style access to Bond attributes is deprecated")
-    def __delitem__(self, prop):
-        """Allow dict-style deletion of attributes for backwards compatibility."""
-        if not hasattr(self.__wrapped, prop):
-            raise KeyError(prop)
-        delattr(self.__wrapped, prop)
-
-    def to_dict(self) -> dict[str, t.Any]:
-        """Return a dictionary containing Bond data."""
-        data = {"aid1": self.aid1, "aid2": self.aid2, "order": self.order}
-        if self.style is not None:
-            data["style"] = self.style
-        return data
 
 
 class Compound:
