@@ -903,7 +903,7 @@ class Compound:
             return _parse_prop({"label": "Conformer", "name": "RMSD"}, coords["data"])
 
     @property
-    def effective_rotor_count_3d(self) -> int | None:
+    def effective_rotor_count_3d(self) -> int | float | None:
         """Number of effective rotors in the 3D structure.
 
         A count of rotatable bonds that significantly contribute to conformational
