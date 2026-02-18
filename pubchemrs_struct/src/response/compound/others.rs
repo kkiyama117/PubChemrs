@@ -40,7 +40,7 @@ pub enum PropsValue {
     /// Integer value.
     Ival(u32),
     /// Floating-point value.
-    Fval(f32),
+    Fval(f64),
     /// Integer vector (e.g. used in 3D records).
     Ivec(Vec<i32>),
     /// Floating-point vector (e.g. multipoles in 3D records).
@@ -62,8 +62,8 @@ impl PropsValue {
         }
     }
 
-    /// Extract an f32 value. Fval returns directly, Sval attempts to parse.
-    pub fn as_f32(&self) -> Option<f32> {
+    /// Extract an f64 value. Fval returns directly, Sval attempts to parse.
+    pub fn as_f64(&self) -> Option<f64> {
         match self {
             PropsValue::Fval(f) => Some(*f),
             PropsValue::Sval(s) => s.parse().ok(),
