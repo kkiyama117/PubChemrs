@@ -308,7 +308,7 @@ def _get_compounds_via_rust(
         return []
     except _RustPubChemAPIError as e:
         raise _rust_api_error_to_legacy(e) from e
-    return [Compound(c.to_dict()) for c in rust_compounds]
+    return [Compound(c.record.to_dict()) for c in rust_compounds]
 
 
 class Compound:

@@ -3,14 +3,16 @@
 from pubchemrs._pubchemrs import (
     PubChemClient,
     CompoundProperties,
+    Compound,
+    CompoundRecord,
 )
-from pubchemrs.compound import Compound
 from pubchemrs.exceptions import PubChemError, PubChemAPIError, PubChemNotFoundError
 from pubchemrs._core import _get_default_client
 
 __all__ = [
     "PubChemClient",
     "Compound",
+    "CompoundRecord",
     "CompoundProperties",
     "PubChemError",
     "PubChemAPIError",
