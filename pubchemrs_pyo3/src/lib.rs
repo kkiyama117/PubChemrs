@@ -30,7 +30,7 @@ fn _pubchemrs(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<pubchemrs_struct::structs::BondType>()?;
     m.add_class::<pubchemrs_struct::structs::ResponseCoordinateType>()?;
 
-    // Expose PROPERTY_MAP as a Python dict {snake_case: PascalCase}
+    // Expose PROPERTY_MAP as a Python dict {snake_case: api_name}
     // Derived from CompoundPropertyTag::variants()
     let property_map = PyDict::new(m.py());
     for variant in pubchemrs_struct::requests::operation::CompoundPropertyTag::variants() {

@@ -12,7 +12,7 @@ use std::str::FromStr;
 /// # Conversions
 ///
 /// - [`Display`] outputs the API name (e.g. `"MolecularWeight"`, `"SMILES"`, `"InChI"`)
-/// - [`FromStr`] accepts PascalCase, snake_case, and known aliases; unknown
+/// - [`FromStr`] accepts API names, snake_case, and known aliases; unknown
 ///   strings become [`Other`](CompoundPropertyTag::Other) (never fails)
 /// - [`From<&str>`] and [`From<String>`] delegate to [`FromStr`]
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
@@ -571,9 +571,9 @@ mod tests {
     #[test]
     fn test_roundtrip_from_str_display() {
         for variant in CompoundPropertyTag::variants() {
-            let as_api_name = variant.to_string();
-            let parsed = CompoundPropertyTag::from(as_api_name.as_str());
-            assert_eq!(parsed, variant, "roundtrip failed for {as_api_name}");
+            let api_name = variant.to_string();
+            let parsed = CompoundPropertyTag::from(api_name.as_str());
+            assert_eq!(parsed, variant, "roundtrip failed for {api_name}");
         }
     }
 
