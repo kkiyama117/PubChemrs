@@ -1,5 +1,7 @@
 use std::sync::OnceLock;
 
+use num_bigint::BigUint;
+
 use pubchemrs_struct::response::Compound;
 use pubchemrs_struct::response::compound::others::PropsValue;
 use pubchemrs_struct::structs::{Atom, Bond};
@@ -454,19 +456,23 @@ impl PyCompound {
 
     #[getter]
     fn cactvs_fingerprint(&self) -> Option<String> {
-        let fp = self
-            .record
-            .parse_prop_by_implementation("E_SCREEN")?
-            .as_string()?;
+        let value = self.record.parse_prop_by_implementation("E_SCREEN")?;
+        let fp = match value {
+            PropsValue::Sval(s) | PropsValue::Binary(s) => s.clone(),
+            _ => return None,
+        };
         if fp.len() < 9 {
             return None;
         }
+        // Skip first 4 bytes (8 hex chars = fingerprint length prefix)
         let hex_part = &fp[8..];
-        let val = u128::from_str_radix(hex_part, 16).ok()?;
-        let binary = format!("{val:0width$b}", width = hex_part.len() * 4);
-        // Remove last 7 bits of padding, then zero-fill to 881 bits
-        if binary.len() >= 7 {
-            let trimmed = &binary[..binary.len() - 7];
+        let val = BigUint::parse_bytes(hex_part.as_bytes(), 16)?;
+        let binary = format!("{val:b}");
+        // Pad to full hex width, remove last 7 padding bits, then zero-fill to 881 bits
+        let full_width = hex_part.len() * 4;
+        let padded = format!("{:0>width$}", binary, width = full_width);
+        if padded.len() >= 7 {
+            let trimmed = &padded[..padded.len() - 7];
             Some(format!("{:0>881}", trimmed))
         } else {
             None
