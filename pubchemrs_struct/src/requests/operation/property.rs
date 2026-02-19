@@ -426,35 +426,6 @@ pub static PROPERTY_MAP: &[(&str, &str)] = &[
     ("fingerprint", "Fingerprint2D"),
 ];
 
-/// Normalize a single property tag from snake_case to PascalCase PubChem API key.
-///
-/// Parses the input through [`CompoundPropertyTag`]'s [`FromStr`] implementation,
-/// then formats it via [`Display`] to produce the PascalCase API key.
-/// Unknown strings pass through unchanged.
-///
-/// # Examples
-///
-/// ```
-/// use pubchemrs_struct::requests::operation::normalize_property_tag;
-///
-/// assert_eq!(normalize_property_tag("molecular_weight"), "MolecularWeight");
-/// assert_eq!(normalize_property_tag("MolecularWeight"), "MolecularWeight");
-/// assert_eq!(normalize_property_tag("UnknownProp"), "UnknownProp");
-/// ```
-pub fn normalize_property_tag(tag: &str) -> String {
-    CompoundPropertyTag::from(tag).to_string()
-}
-
-/// Normalize a slice of property tags from snake_case to PubChem API
-/// [`CompoundPropertyTag`] enum values.
-///
-/// Applies [`CompoundPropertyTag::from`] to each tag.
-pub fn normalize_property_tags(tags: &[String]) -> Vec<CompoundPropertyTag> {
-    tags.iter()
-        .map(|t| CompoundPropertyTag::from(t.as_str()))
-        .collect()
-}
-
 // ---------------------------------------------------------------------------
 // CompoundProperty (list of tags)
 // ---------------------------------------------------------------------------
@@ -684,72 +655,8 @@ mod tests {
     }
 
     #[test]
-    fn test_normalize_snake_case() {
-        assert_eq!(
-            normalize_property_tag("molecular_weight"),
-            "MolecularWeight"
-        );
-        assert_eq!(normalize_property_tag("smiles"), "SMILES");
-        assert_eq!(normalize_property_tag("inchi"), "InChI");
-        assert_eq!(normalize_property_tag("inchikey"), "InChIKey");
-        assert_eq!(normalize_property_tag("iupac_name"), "IUPACName");
-        assert_eq!(normalize_property_tag("xlogp"), "XLogP");
-        assert_eq!(normalize_property_tag("tpsa"), "TPSA");
-        assert_eq!(
-            normalize_property_tag("h_bond_donor_count"),
-            "HBondDonorCount"
-        );
-        assert_eq!(normalize_property_tag("volume_3d"), "Volume3D");
-        assert_eq!(normalize_property_tag("fingerprint"), "Fingerprint2D");
-    }
-
-    #[test]
-    fn test_normalize_pascal_case_passthrough() {
-        assert_eq!(normalize_property_tag("MolecularWeight"), "MolecularWeight");
-        assert_eq!(normalize_property_tag("SMILES"), "SMILES");
-        assert_eq!(normalize_property_tag("InChIKey"), "InChIKey");
-        assert_eq!(normalize_property_tag("Fingerprint2D"), "Fingerprint2D");
-    }
-
-    #[test]
-    fn test_normalize_unknown_passthrough() {
-        assert_eq!(normalize_property_tag("FutureProperty"), "FutureProperty");
-        assert_eq!(normalize_property_tag("SomeNewField"), "SomeNewField");
-    }
-
-    #[test]
-    fn test_normalize_alias() {
-        assert_eq!(
-            normalize_property_tag("conformer_rmsd_3d"),
-            "ConformerModelRMSD3D"
-        );
-        assert_eq!(
-            normalize_property_tag("conformer_model_rmsd_3d"),
-            "ConformerModelRMSD3D"
-        );
-    }
-
-    #[test]
     fn test_property_map_count() {
         assert_eq!(PROPERTY_MAP.len(), 43);
-    }
-
-    #[test]
-    fn test_normalize_batch() {
-        let tags = vec![
-            "molecular_formula".to_string(),
-            "MolecularWeight".to_string(),
-            "unknown_prop".to_string(),
-        ];
-        let normalized = normalize_property_tags(&tags);
-        assert_eq!(
-            normalized,
-            vec![
-                CompoundPropertyTag::MolecularFormula,
-                CompoundPropertyTag::MolecularWeight,
-                CompoundPropertyTag::Other("unknown_prop".into()),
-            ]
-        );
     }
 
     #[test]
