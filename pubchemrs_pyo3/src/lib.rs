@@ -1,4 +1,5 @@
 use pyo3::prelude::*;
+use pyo3::types::PyDict;
 
 mod client;
 mod error;
@@ -28,6 +29,13 @@ fn _pubchemrs(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<pubchemrs_struct::structs::CompoundIdType>()?;
     m.add_class::<pubchemrs_struct::structs::BondType>()?;
     m.add_class::<pubchemrs_struct::structs::ResponseCoordinateType>()?;
+
+    // Expose PROPERTY_MAP as a Python dict {snake_case: PascalCase}
+    let property_map = PyDict::new(m.py());
+    for (snake, pascal) in pubchemrs_struct::requests::operation::PROPERTY_MAP {
+        property_map.set_item(snake, pascal)?;
+    }
+    m.add("PROPERTY_MAP", property_map)?;
 
     Ok(())
 }
