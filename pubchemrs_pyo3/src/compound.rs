@@ -2,11 +2,11 @@ use std::sync::OnceLock;
 
 use num_bigint::BigUint;
 
-use pubchemrs_struct::response::Compound;
+use pubchemrs_struct::response::Compound as CompoundResponse;
 use pubchemrs_struct::response::compound::others::PropsValue;
 use pubchemrs_struct::structs::{Atom, Bond};
 use pyo3::prelude::*;
-use pyo3::types::{PyDict, PyDictMethods, PyList, PyString};
+use pyo3::types::{PyDict, PyList, PyString};
 
 /// Python-facing Compound wrapper around a raw `Compound` record.
 ///
@@ -14,13 +14,13 @@ use pyo3::types::{PyDict, PyDictMethods, PyList, PyString};
 /// with lazy caching for expensive conversions (atoms, bonds).
 #[pyclass(name = "Compound")]
 pub struct PyCompound {
-    record: Compound,
+    record: CompoundResponse,
     atoms_cache: OnceLock<Vec<Atom>>,
     bonds_cache: OnceLock<Vec<Bond>>,
 }
 
 impl PyCompound {
-    pub fn from_record(record: Compound) -> Self {
+    pub fn from_record(record: CompoundResponse) -> Self {
         Self {
             record,
             atoms_cache: OnceLock::new(),
@@ -74,7 +74,7 @@ fn props_value_to_py<'py>(py: Python<'py>, value: &PropsValue) -> PyResult<Bound
 
 /// Search conformer.data for a property by label and name.
 fn parse_conformer_prop<'a>(
-    record: &'a Compound,
+    record: &'a CompoundResponse,
     label: &str,
     name: &str,
 ) -> Option<&'a PropsValue> {
@@ -92,7 +92,7 @@ fn parse_conformer_prop<'a>(
 
 /// Search coords.data for a property by label and name.
 fn parse_coords_data_prop<'a>(
-    record: &'a Compound,
+    record: &'a CompoundResponse,
     label: &str,
     name: &str,
 ) -> Option<&'a PropsValue> {
@@ -113,12 +113,12 @@ fn parse_coords_data_prop<'a>(
 #[pymethods]
 impl PyCompound {
     #[new]
-    fn new(record: Compound) -> Self {
+    fn new(record: CompoundResponse) -> Self {
         Self::from_record(record)
     }
 
     #[getter]
-    fn record(&self) -> Compound {
+    fn record(&self) -> CompoundResponse {
         self.record.clone()
     }
 
