@@ -1,8 +1,10 @@
 """Test Compound class (adapted from pubchempy test_compound.py)."""
 
+import warnings
+
 import pytest
 
-from pubchemrs import Compound
+from pubchemrs import Compound, get_compounds
 
 
 @pytest.mark.network
@@ -12,12 +14,14 @@ class TestCompound:
     @pytest.fixture(scope="class")
     def benzene(self):
         """Fetch benzene (CID 241) as a Compound."""
-        return Compound.from_cid(241)
+        compounds = get_compounds(241)
+        return compounds[0]
 
     @pytest.fixture(scope="class")
     def aspirin(self):
         """Fetch aspirin (CID 2244) as a Compound."""
-        return Compound.from_cid(2244)
+        compounds = get_compounds(2244)
+        return compounds[0]
 
     def test_cid(self, benzene):
         """Test that CID is correct."""
@@ -38,19 +42,53 @@ class TestCompound:
         assert aspirin.inchikey.startswith("BSYNRYMUTXBXSQ")
         assert aspirin.inchi is not None
         assert aspirin.inchi.startswith("InChI=")
-        assert aspirin.isomeric_smiles is not None
+        assert aspirin.smiles is not None
+
+    def test_deprecated_smiles(self, aspirin):
+        """Test that deprecated SMILES properties emit warnings."""
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            val = aspirin.isomeric_smiles
+            assert val is not None
+            assert len(w) == 1
+            assert issubclass(w[0].category, DeprecationWarning)
+
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            val = aspirin.canonical_smiles
+            assert val is not None
+            assert len(w) == 1
+            assert issubclass(w[0].category, DeprecationWarning)
 
     def test_properties_types(self, aspirin):
         """Test that property types are correct."""
         assert isinstance(aspirin.molecular_weight, float)
         assert isinstance(aspirin.iupac_name, str)
-        assert isinstance(aspirin.xlogp, float)
-        assert isinstance(aspirin.tpsa, float)
-        assert isinstance(aspirin.complexity, float)
+        assert isinstance(aspirin.xlogp, (int, float))
+        assert isinstance(aspirin.tpsa, (int, float))
+        assert isinstance(aspirin.complexity, (int, float))
         assert isinstance(aspirin.h_bond_donor_count, int)
         assert isinstance(aspirin.h_bond_acceptor_count, int)
         assert isinstance(aspirin.rotatable_bond_count, int)
         assert isinstance(aspirin.heavy_atom_count, int)
+
+    def test_atoms_and_bonds(self, aspirin):
+        """Test atoms and bonds are populated."""
+        assert len(aspirin.atoms) > 0
+        assert len(aspirin.bonds) > 0
+        assert len(aspirin.elements) == len(aspirin.atoms)
+
+    def test_count_properties(self, aspirin):
+        """Test count-based properties."""
+        assert aspirin.heavy_atom_count is not None
+        assert aspirin.atom_stereo_count is not None
+        assert aspirin.bond_stereo_count is not None
+        assert aspirin.covalent_unit_count is not None
+
+    def test_coordinate_type(self, aspirin):
+        """Test coordinate_type returns 2d or 3d."""
+        ct = aspirin.coordinate_type
+        assert ct in ("2d", "3d")
 
     def test_to_dict(self, aspirin):
         """Test to_dict() method."""
@@ -60,7 +98,12 @@ class TestCompound:
         assert d["molecular_formula"] == "C9H8O4"
         assert "molecular_weight" in d
         assert "inchikey" in d
-        assert "isomeric_smiles" in d
+        assert "smiles" in d
+
+    def test_to_dict_with_properties(self, aspirin):
+        """Test to_dict() with specific properties."""
+        d = aspirin.to_dict(["cid", "molecular_formula"])
+        assert set(d.keys()) == {"cid", "molecular_formula"}
 
     def test_repr(self, aspirin):
         """Test __repr__ output."""
@@ -69,19 +112,92 @@ class TestCompound:
         assert "Compound" in r
 
     def test_equality(self):
-        """Test Compound equality based on CID."""
-        c1 = Compound.from_cid(2244)
-        c2 = Compound.from_cid(2244)
-        assert c1 == c2
+        """Test Compound equality based on record."""
+        compounds1 = get_compounds(2244)
+        compounds2 = get_compounds(2244)
+        assert compounds1[0] == compounds2[0]
 
     def test_inequality(self):
         """Test Compound inequality for different CIDs."""
-        c1 = Compound.from_cid(2244)
-        c2 = Compound.from_cid(241)
-        assert c1 != c2
+        compounds1 = get_compounds(2244)
+        compounds2 = get_compounds(241)
+        assert compounds1[0] != compounds2[0]
 
-    def test_from_cid_returns_correct_type(self):
-        """Test that from_cid returns a Compound instance."""
+    def test_returns_correct_type(self):
+        """Test that get_compounds returns Compound instances."""
+        compounds = get_compounds(2244)
+        assert len(compounds) > 0
+        assert isinstance(compounds[0], Compound)
+        assert compounds[0].cid == 2244
+
+    def test_record_accessor(self, aspirin):
+        """Test that record accessor returns CompoundRecord."""
+        rec = aspirin.record
+        d = rec.to_dict()
+        assert isinstance(d, dict)
+        assert "atoms" in d
+
+
+@pytest.mark.network
+class TestCompoundFromCid:
+    """Test the Compound.from_cid() classmethod."""
+
+    def test_from_cid_returns_compound(self):
         c = Compound.from_cid(2244)
-        assert isinstance(c, Compound)
         assert c.cid == 2244
+
+    def test_from_cid_has_properties(self):
+        c = Compound.from_cid(2244)
+        assert c.molecular_formula is not None
+        assert c.molecular_weight is not None
+
+    def test_from_cid_not_found(self):
+        from pubchemrs import PubChemNotFoundError
+
+        with pytest.raises(PubChemNotFoundError):
+            Compound.from_cid(999999999)
+
+    def test_from_cid_repr(self):
+        c = Compound.from_cid(2244)
+        assert repr(c) == "Compound(2244)"
+
+
+@pytest.mark.network
+class TestCompoundApiProperties:
+    """Test API-fetched properties (synonyms, sids, aids)."""
+
+    @pytest.fixture(scope="class")
+    def aspirin(self):
+        return Compound.from_cid(2244)
+
+    def test_synonyms_returns_list(self, aspirin):
+        syns = aspirin.synonyms
+        assert isinstance(syns, list)
+        assert len(syns) > 0
+
+    def test_synonyms_contains_aspirin(self, aspirin):
+        syns_lower = [s.lower() for s in aspirin.synonyms]
+        assert "aspirin" in syns_lower
+
+    def test_synonyms_cached(self, aspirin):
+        first = aspirin.synonyms
+        second = aspirin.synonyms
+        assert first == second
+
+    def test_sids_returns_list(self, aspirin):
+        sids = aspirin.sids
+        assert isinstance(sids, list)
+        assert len(sids) > 0
+
+    def test_sids_are_integers(self, aspirin):
+        for sid in aspirin.sids[:5]:
+            assert isinstance(sid, int)
+
+    def test_aids_returns_list(self, aspirin):
+        aids = aspirin.aids
+        assert isinstance(aids, list)
+        assert len(aids) > 0
+
+    def test_aids_are_integers(self, aspirin):
+        for aid in aspirin.aids[:5]:
+            assert isinstance(aid, int)

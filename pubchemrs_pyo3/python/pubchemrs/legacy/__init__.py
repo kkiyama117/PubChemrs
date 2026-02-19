@@ -663,16 +663,15 @@ class Substance:
             return Compound.from_cid(cid)
 
     @property
-    def deposited_compound(self) -> Compound | None:
-        """A :class:`~pubchempy.Compound` derived from the unstandardized Substance.
+    def deposited_compound(self) -> None:
+        """Not supported with Rust Compound backend.
 
-        This :class:`~pubchempy.Compound` is produced from the unstandardized Substance
-        record as deposited. It will not have a ``cid`` and will be missing most
-        properties.
+        The deposited compound from the unstandardized Substance record cannot be
+        constructed as a Rust Compound object. Use ``standardized_compound`` instead,
+        or access the raw record directly via ``self.record['compound']``.
         """
-        for c in self.record.get("compound", []):
-            if c["id"]["type"] == CompoundIdType.DEPOSITED:
-                return Compound(c)
+        log.debug("deposited_compound is not supported with Rust Compound backend")
+        return None
 
     @memoized_property
     def cids(self) -> list[int]:
