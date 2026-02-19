@@ -301,9 +301,7 @@ fn parse_known(s: &str) -> Option<CompoundPropertyTag> {
         "UndefinedBondStereoCount" | "undefined_bond_stereo_count" => UndefinedBondStereoCount,
         "CovalentUnitCount" | "covalent_unit_count" => CovalentUnitCount,
         "Volume3D" | "volume_3d" => Volume3D,
-        "ConformerModelRMSD3D" | "conformer_model_rmsd_3d" | "conformer_rmsd_3d" => {
-            ConformerModelRmsd3D
-        }
+        "ConformerModelRMSD3D" | "conformer_model_rmsd_3d" => ConformerModelRmsd3D,
         "XStericQuadrupole3D" | "x_steric_quadrupole_3d" => XStericQuadrupole3D,
         "YStericQuadrupole3D" | "y_steric_quadrupole_3d" => YStericQuadrupole3D,
         "ZStericQuadrupole3D" | "z_steric_quadrupole_3d" => ZStericQuadrupole3D,
@@ -316,7 +314,7 @@ fn parse_known(s: &str) -> Option<CompoundPropertyTag> {
         "FeatureHydrophobeCount3D" | "feature_hydrophobe_count_3d" => FeatureHydrophobeCount3D,
         "EffectiveRotorCount3D" | "effective_rotor_count_3d" => EffectiveRotorCount3D,
         "ConformerCount3D" | "conformer_count_3d" => ConformerCount3D,
-        "Fingerprint2D" | "fingerprint_2d" | "fingerprint" => Fingerprint2D,
+        "Fingerprint2D" | "fingerprint_2d" => Fingerprint2D,
         _ => return None,
     })
 }
@@ -369,62 +367,6 @@ impl<'de> serde::Deserialize<'de> for CompoundPropertyTag {
         Ok(Self::from(s))
     }
 }
-
-// ---------------------------------------------------------------------------
-// PROPERTY_MAP (backward compatible)
-// ---------------------------------------------------------------------------
-
-/// Mapping from snake_case Python-style property names to PubChem API PascalCase keys.
-///
-/// This mapping is compatible with the legacy `pubchempy` library's `PROPERTY_MAP`.
-/// Unknown property names are passed through unchanged for forward compatibility.
-///
-/// Each entry is `(snake_case_name, PascalCaseApiKey)`.
-pub static PROPERTY_MAP: &[(&str, &str)] = &[
-    ("molecular_formula", "MolecularFormula"),
-    ("molecular_weight", "MolecularWeight"),
-    ("smiles", "SMILES"),
-    ("connectivity_smiles", "ConnectivitySMILES"),
-    ("canonical_smiles", "CanonicalSMILES"),
-    ("isomeric_smiles", "IsomericSMILES"),
-    ("inchi", "InChI"),
-    ("inchikey", "InChIKey"),
-    ("iupac_name", "IUPACName"),
-    ("xlogp", "XLogP"),
-    ("exact_mass", "ExactMass"),
-    ("monoisotopic_mass", "MonoisotopicMass"),
-    ("tpsa", "TPSA"),
-    ("complexity", "Complexity"),
-    ("charge", "Charge"),
-    ("h_bond_donor_count", "HBondDonorCount"),
-    ("h_bond_acceptor_count", "HBondAcceptorCount"),
-    ("rotatable_bond_count", "RotatableBondCount"),
-    ("heavy_atom_count", "HeavyAtomCount"),
-    ("isotope_atom_count", "IsotopeAtomCount"),
-    ("atom_stereo_count", "AtomStereoCount"),
-    ("defined_atom_stereo_count", "DefinedAtomStereoCount"),
-    ("undefined_atom_stereo_count", "UndefinedAtomStereoCount"),
-    ("bond_stereo_count", "BondStereoCount"),
-    ("defined_bond_stereo_count", "DefinedBondStereoCount"),
-    ("undefined_bond_stereo_count", "UndefinedBondStereoCount"),
-    ("covalent_unit_count", "CovalentUnitCount"),
-    ("volume_3d", "Volume3D"),
-    ("conformer_rmsd_3d", "ConformerModelRMSD3D"),
-    ("conformer_model_rmsd_3d", "ConformerModelRMSD3D"),
-    ("x_steric_quadrupole_3d", "XStericQuadrupole3D"),
-    ("y_steric_quadrupole_3d", "YStericQuadrupole3D"),
-    ("z_steric_quadrupole_3d", "ZStericQuadrupole3D"),
-    ("feature_count_3d", "FeatureCount3D"),
-    ("feature_acceptor_count_3d", "FeatureAcceptorCount3D"),
-    ("feature_donor_count_3d", "FeatureDonorCount3D"),
-    ("feature_anion_count_3d", "FeatureAnionCount3D"),
-    ("feature_cation_count_3d", "FeatureCationCount3D"),
-    ("feature_ring_count_3d", "FeatureRingCount3D"),
-    ("feature_hydrophobe_count_3d", "FeatureHydrophobeCount3D"),
-    ("effective_rotor_count_3d", "EffectiveRotorCount3D"),
-    ("conformer_count_3d", "ConformerCount3D"),
-    ("fingerprint", "Fingerprint2D"),
-];
 
 // ---------------------------------------------------------------------------
 // CompoundProperty (list of tags)
@@ -580,12 +522,13 @@ mod tests {
             CompoundPropertyTag::Volume3D
         );
         assert_eq!(
-            CompoundPropertyTag::from("fingerprint"),
-            CompoundPropertyTag::Fingerprint2D,
-        );
-        assert_eq!(
             CompoundPropertyTag::from("fingerprint_2d"),
             CompoundPropertyTag::Fingerprint2D,
+        );
+        // "fingerprint" is not an official API name, becomes Other
+        assert_eq!(
+            CompoundPropertyTag::from("fingerprint"),
+            CompoundPropertyTag::Other("fingerprint".into()),
         );
     }
 
@@ -610,14 +553,15 @@ mod tests {
     }
 
     #[test]
-    fn test_from_str_alias() {
-        assert_eq!(
-            CompoundPropertyTag::from("conformer_rmsd_3d"),
-            CompoundPropertyTag::ConformerModelRmsd3D,
-        );
+    fn test_from_str_conformer_model_rmsd() {
         assert_eq!(
             CompoundPropertyTag::from("conformer_model_rmsd_3d"),
             CompoundPropertyTag::ConformerModelRmsd3D,
+        );
+        // Non-official alias becomes Other
+        assert_eq!(
+            CompoundPropertyTag::from("conformer_rmsd_3d"),
+            CompoundPropertyTag::Other("conformer_rmsd_3d".into()),
         );
     }
 
@@ -655,17 +599,14 @@ mod tests {
     }
 
     #[test]
-    fn test_property_map_count() {
-        assert_eq!(PROPERTY_MAP.len(), 43);
-    }
-
-    #[test]
-    fn test_property_map_no_duplicate_keys() {
-        let mut keys: Vec<&str> = PROPERTY_MAP.iter().map(|(k, _)| *k).collect();
-        keys.sort();
-        let len_before = keys.len();
-        keys.dedup();
-        assert_eq!(keys.len(), len_before, "PROPERTY_MAP has duplicate keys");
+    fn test_variants_no_duplicate_snake_case_names() {
+        let mut names: Vec<_> = CompoundPropertyTag::variants()
+            .map(|v| v.snake_case_name().into_owned())
+            .collect();
+        names.sort();
+        let len_before = names.len();
+        names.dedup();
+        assert_eq!(len_before, names.len(), "duplicate snake_case names found");
     }
 
     #[test]
