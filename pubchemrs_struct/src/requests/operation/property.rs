@@ -11,153 +11,101 @@ use std::str::FromStr;
 ///
 /// # Conversions
 ///
-/// - [`Display`] outputs the PascalCase API key (e.g. `"MolecularWeight"`)
+/// - [`Display`] outputs the API name (e.g. `"MolecularWeight"`, `"SMILES"`, `"InChI"`)
 /// - [`FromStr`] accepts PascalCase, snake_case, and known aliases; unknown
 ///   strings become [`Other`](CompoundPropertyTag::Other) (never fails)
 /// - [`From<&str>`] and [`From<String>`] delegate to [`FromStr`]
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub enum CompoundPropertyTag {
-    /// Molecular formula (e.g. `"C9H8O4"`). API key: `MolecularFormula`.
+    /// Molecular formula (e.g. `"C9H8O4"`). API name: `MolecularFormula`.
     MolecularFormula,
-    /// Molecular weight. API key: `MolecularWeight`.
+    /// Molecular weight. API name: `MolecularWeight`.
     MolecularWeight,
-    /// Full SMILES (with stereochemistry). API key: `SMILES`.
+    /// Full SMILES (with stereochemistry). API name: `SMILES`.
     Smiles,
-    /// Connectivity-only SMILES. API key: `ConnectivitySMILES`.
+    /// Connectivity-only SMILES. API name: `ConnectivitySMILES`.
     ConnectivitySmiles,
-    /// Legacy canonical SMILES. API key: `CanonicalSMILES`.
+    /// Legacy canonical SMILES. API name: `CanonicalSMILES`.
     CanonicalSmiles,
-    /// Legacy isomeric SMILES. API key: `IsomericSMILES`.
+    /// Legacy isomeric SMILES. API name: `IsomericSMILES`.
     IsomericSmiles,
-    /// InChI identifier. API key: `InChI`.
+    /// InChI identifier. API name: `InChI`.
     InChI,
-    /// InChI hash key. API key: `InChIKey`.
+    /// InChI hash key. API name: `InChIKey`.
     InChIKey,
-    /// IUPAC systematic name. API key: `IUPACName`.
+    /// IUPAC systematic name. API name: `IUPACName`.
     IupacName,
-    /// Octanol-water partition coefficient. API key: `XLogP`.
+    /// Octanol-water partition coefficient. API name: `XLogP`.
     XLogP,
-    /// Exact mass. API key: `ExactMass`.
+    /// Exact mass. API name: `ExactMass`.
     ExactMass,
-    /// Monoisotopic mass. API key: `MonoisotopicMass`.
+    /// Monoisotopic mass. API name: `MonoisotopicMass`.
     MonoisotopicMass,
-    /// Topological polar surface area. API key: `TPSA`.
+    /// Topological polar surface area. API name: `TPSA`.
     Tpsa,
-    /// Molecular complexity. API key: `Complexity`.
+    /// Molecular complexity. API name: `Complexity`.
     Complexity,
-    /// Formal charge. API key: `Charge`.
+    /// Formal charge. API name: `Charge`.
     Charge,
-    /// Hydrogen bond donor count. API key: `HBondDonorCount`.
+    /// Hydrogen bond donor count. API name: `HBondDonorCount`.
     HBondDonorCount,
-    /// Hydrogen bond acceptor count. API key: `HBondAcceptorCount`.
+    /// Hydrogen bond acceptor count. API name: `HBondAcceptorCount`.
     HBondAcceptorCount,
-    /// Rotatable bond count. API key: `RotatableBondCount`.
+    /// Rotatable bond count. API name: `RotatableBondCount`.
     RotatableBondCount,
-    /// Heavy (non-hydrogen) atom count. API key: `HeavyAtomCount`.
+    /// Heavy (non-hydrogen) atom count. API name: `HeavyAtomCount`.
     HeavyAtomCount,
-    /// Isotope atom count. API key: `IsotopeAtomCount`.
+    /// Isotope atom count. API name: `IsotopeAtomCount`.
     IsotopeAtomCount,
-    /// Atom stereo center count. API key: `AtomStereoCount`.
+    /// Atom stereo center count. API name: `AtomStereoCount`.
     AtomStereoCount,
-    /// Defined atom stereo center count. API key: `DefinedAtomStereoCount`.
+    /// Defined atom stereo center count. API name: `DefinedAtomStereoCount`.
     DefinedAtomStereoCount,
-    /// Undefined atom stereo center count. API key: `UndefinedAtomStereoCount`.
+    /// Undefined atom stereo center count. API name: `UndefinedAtomStereoCount`.
     UndefinedAtomStereoCount,
-    /// Bond stereo center count. API key: `BondStereoCount`.
+    /// Bond stereo center count. API name: `BondStereoCount`.
     BondStereoCount,
-    /// Defined bond stereo center count. API key: `DefinedBondStereoCount`.
+    /// Defined bond stereo center count. API name: `DefinedBondStereoCount`.
     DefinedBondStereoCount,
-    /// Undefined bond stereo center count. API key: `UndefinedBondStereoCount`.
+    /// Undefined bond stereo center count. API name: `UndefinedBondStereoCount`.
     UndefinedBondStereoCount,
-    /// Covalent unit count. API key: `CovalentUnitCount`.
+    /// Covalent unit count. API name: `CovalentUnitCount`.
     CovalentUnitCount,
-    /// 3D volume. API key: `Volume3D`.
+    /// 3D volume. API name: `Volume3D`.
     Volume3D,
-    /// 3D conformer model RMSD. API key: `ConformerModelRMSD3D`.
+    /// 3D conformer model RMSD. API name: `ConformerModelRMSD3D`.
     ConformerModelRmsd3D,
-    /// 3D X steric quadrupole. API key: `XStericQuadrupole3D`.
+    /// 3D X steric quadrupole. API name: `XStericQuadrupole3D`.
     XStericQuadrupole3D,
-    /// 3D Y steric quadrupole. API key: `YStericQuadrupole3D`.
+    /// 3D Y steric quadrupole. API name: `YStericQuadrupole3D`.
     YStericQuadrupole3D,
-    /// 3D Z steric quadrupole. API key: `ZStericQuadrupole3D`.
+    /// 3D Z steric quadrupole. API name: `ZStericQuadrupole3D`.
     ZStericQuadrupole3D,
-    /// 3D pharmacophore feature count. API key: `FeatureCount3D`.
+    /// 3D pharmacophore feature count. API name: `FeatureCount3D`.
     FeatureCount3D,
-    /// 3D acceptor feature count. API key: `FeatureAcceptorCount3D`.
+    /// 3D acceptor feature count. API name: `FeatureAcceptorCount3D`.
     FeatureAcceptorCount3D,
-    /// 3D donor feature count. API key: `FeatureDonorCount3D`.
+    /// 3D donor feature count. API name: `FeatureDonorCount3D`.
     FeatureDonorCount3D,
-    /// 3D anion feature count. API key: `FeatureAnionCount3D`.
+    /// 3D anion feature count. API name: `FeatureAnionCount3D`.
     FeatureAnionCount3D,
-    /// 3D cation feature count. API key: `FeatureCationCount3D`.
+    /// 3D cation feature count. API name: `FeatureCationCount3D`.
     FeatureCationCount3D,
-    /// 3D ring feature count. API key: `FeatureRingCount3D`.
+    /// 3D ring feature count. API name: `FeatureRingCount3D`.
     FeatureRingCount3D,
-    /// 3D hydrophobe feature count. API key: `FeatureHydrophobeCount3D`.
+    /// 3D hydrophobe feature count. API name: `FeatureHydrophobeCount3D`.
     FeatureHydrophobeCount3D,
-    /// 3D effective rotor count. API key: `EffectiveRotorCount3D`.
+    /// 3D effective rotor count. API name: `EffectiveRotorCount3D`.
     EffectiveRotorCount3D,
-    /// 3D conformer count. API key: `ConformerCount3D`.
+    /// 3D conformer count. API name: `ConformerCount3D`.
     ConformerCount3D,
-    /// 2D fingerprint. API key: `Fingerprint2D`.
+    /// 2D fingerprint. API name: `Fingerprint2D`.
     Fingerprint2D,
     /// Unknown or future property (forward compatibility).
     Other(String),
 }
 
 impl CompoundPropertyTag {
-    /// Returns the PascalCase API key for this property tag.
-    ///
-    /// For known variants this returns a `&'static str`; for [`Other`](Self::Other)
-    /// it returns the stored string.
-    pub fn api_key(&self) -> &str {
-        match self {
-            Self::MolecularFormula => "MolecularFormula",
-            Self::MolecularWeight => "MolecularWeight",
-            Self::Smiles => "SMILES",
-            Self::ConnectivitySmiles => "ConnectivitySMILES",
-            Self::CanonicalSmiles => "CanonicalSMILES",
-            Self::IsomericSmiles => "IsomericSMILES",
-            Self::InChI => "InChI",
-            Self::InChIKey => "InChIKey",
-            Self::IupacName => "IUPACName",
-            Self::XLogP => "XLogP",
-            Self::ExactMass => "ExactMass",
-            Self::MonoisotopicMass => "MonoisotopicMass",
-            Self::Tpsa => "TPSA",
-            Self::Complexity => "Complexity",
-            Self::Charge => "Charge",
-            Self::HBondDonorCount => "HBondDonorCount",
-            Self::HBondAcceptorCount => "HBondAcceptorCount",
-            Self::RotatableBondCount => "RotatableBondCount",
-            Self::HeavyAtomCount => "HeavyAtomCount",
-            Self::IsotopeAtomCount => "IsotopeAtomCount",
-            Self::AtomStereoCount => "AtomStereoCount",
-            Self::DefinedAtomStereoCount => "DefinedAtomStereoCount",
-            Self::UndefinedAtomStereoCount => "UndefinedAtomStereoCount",
-            Self::BondStereoCount => "BondStereoCount",
-            Self::DefinedBondStereoCount => "DefinedBondStereoCount",
-            Self::UndefinedBondStereoCount => "UndefinedBondStereoCount",
-            Self::CovalentUnitCount => "CovalentUnitCount",
-            Self::Volume3D => "Volume3D",
-            Self::ConformerModelRmsd3D => "ConformerModelRMSD3D",
-            Self::XStericQuadrupole3D => "XStericQuadrupole3D",
-            Self::YStericQuadrupole3D => "YStericQuadrupole3D",
-            Self::ZStericQuadrupole3D => "ZStericQuadrupole3D",
-            Self::FeatureCount3D => "FeatureCount3D",
-            Self::FeatureAcceptorCount3D => "FeatureAcceptorCount3D",
-            Self::FeatureDonorCount3D => "FeatureDonorCount3D",
-            Self::FeatureAnionCount3D => "FeatureAnionCount3D",
-            Self::FeatureCationCount3D => "FeatureCationCount3D",
-            Self::FeatureRingCount3D => "FeatureRingCount3D",
-            Self::FeatureHydrophobeCount3D => "FeatureHydrophobeCount3D",
-            Self::EffectiveRotorCount3D => "EffectiveRotorCount3D",
-            Self::ConformerCount3D => "ConformerCount3D",
-            Self::Fingerprint2D => "Fingerprint2D",
-            Self::Other(s) => s.as_str(),
-        }
-    }
-
     /// Returns the canonical snake_case name for this property tag.
     ///
     /// For known variants this returns a borrowed `&'static str` in a [`Cow`];
@@ -272,7 +220,7 @@ impl CompoundPropertyTag {
 fn parse_known(s: &str) -> Option<CompoundPropertyTag> {
     use CompoundPropertyTag::*;
     Some(match s {
-        // PascalCase API keys
+        // API names
         "MolecularFormula" | "molecular_formula" => MolecularFormula,
         "MolecularWeight" | "molecular_weight" => MolecularWeight,
         "SMILES" | "smiles" => Smiles,
@@ -323,15 +271,58 @@ fn parse_known(s: &str) -> Option<CompoundPropertyTag> {
 // Trait implementations
 // ---------------------------------------------------------------------------
 
+/// Outputs the PubChem API name for this property tag.
+///
+/// The format varies by property (e.g. `"MolecularWeight"`, `"SMILES"`,
+/// `"InChI"`, `"TPSA"`). For [`Other`](CompoundPropertyTag::Other) it
+/// outputs the stored string as-is.
 impl Display for CompoundPropertyTag {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str(self.api_key())
-    }
-}
-
-impl AsRef<str> for CompoundPropertyTag {
-    fn as_ref(&self) -> &str {
-        self.api_key()
+        match self {
+            Self::MolecularFormula => f.write_str("MolecularFormula"),
+            Self::MolecularWeight => f.write_str("MolecularWeight"),
+            Self::Smiles => f.write_str("SMILES"),
+            Self::ConnectivitySmiles => f.write_str("ConnectivitySMILES"),
+            Self::CanonicalSmiles => f.write_str("CanonicalSMILES"),
+            Self::IsomericSmiles => f.write_str("IsomericSMILES"),
+            Self::InChI => f.write_str("InChI"),
+            Self::InChIKey => f.write_str("InChIKey"),
+            Self::IupacName => f.write_str("IUPACName"),
+            Self::XLogP => f.write_str("XLogP"),
+            Self::ExactMass => f.write_str("ExactMass"),
+            Self::MonoisotopicMass => f.write_str("MonoisotopicMass"),
+            Self::Tpsa => f.write_str("TPSA"),
+            Self::Complexity => f.write_str("Complexity"),
+            Self::Charge => f.write_str("Charge"),
+            Self::HBondDonorCount => f.write_str("HBondDonorCount"),
+            Self::HBondAcceptorCount => f.write_str("HBondAcceptorCount"),
+            Self::RotatableBondCount => f.write_str("RotatableBondCount"),
+            Self::HeavyAtomCount => f.write_str("HeavyAtomCount"),
+            Self::IsotopeAtomCount => f.write_str("IsotopeAtomCount"),
+            Self::AtomStereoCount => f.write_str("AtomStereoCount"),
+            Self::DefinedAtomStereoCount => f.write_str("DefinedAtomStereoCount"),
+            Self::UndefinedAtomStereoCount => f.write_str("UndefinedAtomStereoCount"),
+            Self::BondStereoCount => f.write_str("BondStereoCount"),
+            Self::DefinedBondStereoCount => f.write_str("DefinedBondStereoCount"),
+            Self::UndefinedBondStereoCount => f.write_str("UndefinedBondStereoCount"),
+            Self::CovalentUnitCount => f.write_str("CovalentUnitCount"),
+            Self::Volume3D => f.write_str("Volume3D"),
+            Self::ConformerModelRmsd3D => f.write_str("ConformerModelRMSD3D"),
+            Self::XStericQuadrupole3D => f.write_str("XStericQuadrupole3D"),
+            Self::YStericQuadrupole3D => f.write_str("YStericQuadrupole3D"),
+            Self::ZStericQuadrupole3D => f.write_str("ZStericQuadrupole3D"),
+            Self::FeatureCount3D => f.write_str("FeatureCount3D"),
+            Self::FeatureAcceptorCount3D => f.write_str("FeatureAcceptorCount3D"),
+            Self::FeatureDonorCount3D => f.write_str("FeatureDonorCount3D"),
+            Self::FeatureAnionCount3D => f.write_str("FeatureAnionCount3D"),
+            Self::FeatureCationCount3D => f.write_str("FeatureCationCount3D"),
+            Self::FeatureRingCount3D => f.write_str("FeatureRingCount3D"),
+            Self::FeatureHydrophobeCount3D => f.write_str("FeatureHydrophobeCount3D"),
+            Self::EffectiveRotorCount3D => f.write_str("EffectiveRotorCount3D"),
+            Self::ConformerCount3D => f.write_str("ConformerCount3D"),
+            Self::Fingerprint2D => f.write_str("Fingerprint2D"),
+            Self::Other(s) => f.write_str(s),
+        }
     }
 }
 
@@ -357,7 +348,7 @@ impl From<String> for CompoundPropertyTag {
 
 impl serde::Serialize for CompoundPropertyTag {
     fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        serializer.serialize_str(self.api_key())
+        serializer.collect_str(self)
     }
 }
 
@@ -448,7 +439,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_display_outputs_pascal_case_api_key() {
+    fn test_display_outputs_api_name() {
         assert_eq!(
             CompoundPropertyTag::MolecularFormula.to_string(),
             "MolecularFormula"
@@ -533,7 +524,7 @@ mod tests {
     }
 
     #[test]
-    fn test_from_str_pascal_case() {
+    fn test_from_str_api_name() {
         assert_eq!(
             CompoundPropertyTag::from("MolecularWeight"),
             CompoundPropertyTag::MolecularWeight,
@@ -580,9 +571,9 @@ mod tests {
     #[test]
     fn test_roundtrip_from_str_display() {
         for variant in CompoundPropertyTag::variants() {
-            let api_key = variant.to_string();
-            let parsed = CompoundPropertyTag::from(api_key.as_str());
-            assert_eq!(parsed, variant, "roundtrip failed for {api_key}");
+            let as_api_name = variant.to_string();
+            let parsed = CompoundPropertyTag::from(as_api_name.as_str());
+            assert_eq!(parsed, variant, "roundtrip failed for {as_api_name}");
         }
     }
 

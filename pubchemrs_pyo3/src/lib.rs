@@ -34,7 +34,7 @@ fn _pubchemrs(m: &Bound<'_, PyModule>) -> PyResult<()> {
     // Derived from CompoundPropertyTag::variants()
     let property_map = PyDict::new(m.py());
     for variant in pubchemrs_struct::requests::operation::CompoundPropertyTag::variants() {
-        property_map.set_item(variant.snake_case_name().as_ref(), variant.api_key())?;
+        property_map.set_item(variant.snake_case_name().as_ref(), variant.to_string())?;
     }
     m.add("PROPERTY_MAP", property_map)?;
 
