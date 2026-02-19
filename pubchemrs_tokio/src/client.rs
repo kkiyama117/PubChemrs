@@ -1,7 +1,7 @@
 use std::sync::OnceLock;
 use std::time::Duration;
 
-use pubchemrs_struct::requests::url_builder::{PUBCHEM_API_BASE, UrlBuilder};
+use pubchemrs_struct::requests::url_builder::UrlBuilder;
 use pubchemrs_struct::response::PubChemResponse;
 
 use crate::error::{Error, Result};
@@ -64,9 +64,8 @@ impl PubChemClient {
 
     /// Build the full URL and optional POST body from a `UrlBuilder`.
     fn build_request_parts(url_builder: &UrlBuilder) -> Result<(String, Option<String>)> {
-        let (parts, body) = url_builder.build_url_parts()?;
-        let url = format!("{}/{}", PUBCHEM_API_BASE, parts.join("/"));
-        Ok((url, body))
+        let built = url_builder.build_url_parts()?;
+        Ok((built.to_full_url(), built.post_body))
     }
 
     /// Send a raw HTTP request with automatic GET/POST selection and retry.
@@ -199,6 +198,7 @@ struct FaultInner {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use pubchemrs_struct::requests::url_builder::PUBCHEM_API_BASE;
 
     #[test]
     fn test_default_config() {
@@ -464,6 +464,32 @@ mod tests {
 
         let (url, body) = PubChemClient::build_request_parts(&builder).unwrap();
         assert!(url.contains("SDF"));
+        assert!(body.is_none());
+    }
+
+    #[test]
+    fn test_build_request_parts_with_kwargs() {
+        use pubchemrs_struct::requests::input::*;
+        use pubchemrs_struct::requests::operation::*;
+        use pubchemrs_struct::requests::output::OutputFormat;
+        use std::collections::HashMap;
+
+        let mut kwargs = HashMap::new();
+        kwargs.insert("record_type".to_string(), "3d".to_string());
+
+        let builder = UrlBuilder {
+            input_specification: InputSpecification {
+                domain: Domain::Compound(),
+                namespace: Namespace::Compound(CompoundNamespace::Cid()),
+                identifiers: 2244u32.into(),
+            },
+            operation: Operation::Compound(CompoundOperationSpecification::Record()),
+            output: OutputFormat::JSON(),
+            kwargs,
+        };
+
+        let (url, body) = PubChemClient::build_request_parts(&builder).unwrap();
+        assert!(url.ends_with("?record_type=3d"), "got: {url}");
         assert!(body.is_none());
     }
 

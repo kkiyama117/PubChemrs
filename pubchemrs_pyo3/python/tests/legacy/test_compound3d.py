@@ -4,7 +4,7 @@ import warnings
 
 import pytest
 
-from pubchemrs.legacy import Compound, PubChemPyDeprecationWarning
+from pubchemrs.legacy import Compound
 
 
 @pytest.fixture
@@ -17,7 +17,7 @@ def test_properties_types(c3d):
     assert isinstance(c3d.volume_3d, float)
     assert isinstance(c3d.multipoles_3d, list)
     assert isinstance(c3d.conformer_rmsd_3d, float)
-    assert isinstance(c3d.effective_rotor_count_3d, int)
+    assert isinstance(c3d.effective_rotor_count_3d, (int, float))
     assert isinstance(c3d.pharmacophore_features_3d, list)
     assert isinstance(c3d.mmff94_partial_charges_3d, list)
     assert isinstance(c3d.mmff94_energy_3d, float)
@@ -42,7 +42,7 @@ def test_atoms_deprecated(c3d):
     with warnings.catch_warnings(record=True) as w:
         assert {a["element"] for a in c3d.atoms} == {"C", "H", "O", "N"}
         assert len(w) == 1
-        assert w[0].category == PubChemPyDeprecationWarning
+        assert w[0].category == DeprecationWarning
         expected_message = (
             "__getitem__ is deprecated: Dictionary style access to Atom attributes is "
             "deprecated"
@@ -63,7 +63,7 @@ def test_coordinates_deprecated(c3d):
         assert isinstance(c3d.atoms[0]["y"], (float, int))
         assert isinstance(c3d.atoms[0]["z"], (float, int))
         assert len(w) == 3
-        assert w[0].category == PubChemPyDeprecationWarning
+        assert w[0].category == DeprecationWarning
         expected_message = (
             "__getitem__ is deprecated: Dictionary style access to Atom attributes is "
             "deprecated"

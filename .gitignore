@@ -325,3 +325,4 @@ Cargo.lock
 # Other files
 .mcp.json
 openspec/*
+PLAN/

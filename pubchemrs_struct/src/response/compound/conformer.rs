@@ -1,7 +1,12 @@
+use super::others::CompoundProps;
+
 /// A single conformer with atom coordinates from a PubChem compound record.
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass(from_py_object))]
 pub struct ConformerInner {
+    /// Conformer-level property data (e.g. Shape Volume, MMFF94 Energy in 3D records).
+    #[serde(default)]
+    pub data: Option<Vec<CompoundProps>>,
     /// Bond display style annotations, if present.
     #[serde(default)]
     pub style: Option<ConformerInnerStyle>,

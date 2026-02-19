@@ -287,11 +287,14 @@ def deprecated(message: str) -> t.Callable[[t.Callable], t.Callable]:
 def _get_compounds_via_rust(
     identifier: str | int | list[str | int],
     namespace: str,
+    **kwargs: QueryParam,
 ) -> list:
     """Fetch compound records using the Rust backend and convert to legacy Compound objects."""
     client = _rust_client()
+    # Convert kwargs values to strings for the Rust client
+    str_kwargs = {k: str(v) for k, v in kwargs.items() if v is not None}
     try:
-        rust_compounds = client.get_compounds_sync(identifier, namespace)
+        rust_compounds = client.get_compounds_sync(identifier, namespace, **str_kwargs)
     except _RustNotFoundError:
         return []
     except _RustPubChemAPIError as e:
@@ -398,7 +401,7 @@ class Compound:
         """
         from pubchemrs.legacy import NotFoundError
 
-        compounds = _get_compounds_via_rust(cid, "cid")
+        compounds = _get_compounds_via_rust(cid, "cid", **kwargs)
         if not compounds:
             raise NotFoundError(404, "Not Found", [f"No compound found for CID {cid}"])
         return compounds[0]
@@ -900,7 +903,7 @@ class Compound:
             return _parse_prop({"label": "Conformer", "name": "RMSD"}, coords["data"])
 
     @property
-    def effective_rotor_count_3d(self) -> int | None:
+    def effective_rotor_count_3d(self) -> int | float | None:
         """Number of effective rotors in the 3D structure.
 
         A count of rotatable bonds that significantly contribute to conformational
@@ -986,8 +989,8 @@ def get_compounds(
     """
     from pubchemrs.legacy import get_json
 
-    if searchtype is not None:
-        # Searchtype requires listkey polling; fall back to legacy HTTP
+    if searchtype is not None or namespace == "formula":
+        # Searchtype and formula require listkey polling; fall back to legacy HTTP
         results = get_json(identifier, namespace, searchtype=searchtype, **kwargs)
         compounds = [Compound(r) for r in results["PC_Compounds"]] if results else []
     else:

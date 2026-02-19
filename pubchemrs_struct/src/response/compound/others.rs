@@ -40,11 +40,16 @@ pub enum PropsValue {
     /// Integer value.
     Ival(u32),
     /// Floating-point value.
-    Fval(f32),
+    Fval(f64),
+    /// Integer vector (e.g. used in 3D records).
+    Ivec(Vec<i32>),
+    /// Floating-point vector (e.g. multipoles in 3D records).
+    Fvec(Vec<f64>),
     /// String value.
     Sval(String),
+    /// String list value (e.g. pharmacophore features, shape fingerprints in 3D records).
+    Slist(Vec<String>),
     /// Binary data encoded as a string.
-    // TODO: Use `binary`
     Binary(String),
 }
 
@@ -57,10 +62,11 @@ impl PropsValue {
         }
     }
 
-    /// Extract an f32 value. Fval returns directly, Sval attempts to parse.
-    pub fn as_f32(&self) -> Option<f32> {
+    /// Extract an f64 value. Fval returns directly, Ival is losslessly converted, Sval attempts to parse.
+    pub fn as_f64(&self) -> Option<f64> {
         match self {
             PropsValue::Fval(f) => Some(*f),
+            PropsValue::Ival(i) => Some(f64::from(*i)),
             PropsValue::Sval(s) => s.parse().ok(),
             _ => None,
         }

@@ -23,10 +23,22 @@ pub enum PubChemResponse {
     CompoundProperties(serde_json::Value),
     /// Information list (synonyms, source names, etc.).
     InformationList(PubChemInformationList),
+    /// Async waiting response with a ListKey for polling.
+    Waiting(PubChemWaiting),
     /// API error / fault response.
     Fault(PubChemFault),
     /// Unrecognized response shape.
     Unknown(serde_json::Value),
+}
+
+/// Async waiting response returned by PubChem for long-running queries (e.g. formula search).
+///
+/// Contains a `ListKey` that must be polled until results are ready.
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
+pub struct PubChemWaiting {
+    /// List key identifier for polling the async result.
+    #[serde(rename = "ListKey")]
+    pub list_key: u64,
 }
 
 /// API fault/error response returned by PubChem when a request fails.
