@@ -23,7 +23,10 @@ QueryParam = str | int | float | bool | list[str] | None
 
 
 class CompoundIdType(enum.IntEnum):
-    """Compound record type."""
+    """Compound record type.
+
+    This is only for pyo3 limitation of not creating `enum.IntEnum.
+    """
 
     #: Original Deposited Compound
     DEPOSITED = 0
@@ -49,7 +52,10 @@ class CompoundIdType(enum.IntEnum):
 
 
 class BondType(enum.IntEnum):
-    """Bond Type Information."""
+    """Bond Type Information.
+
+    This is only for pyo3 limitation of not creating `enum.IntEnum.
+    """
 
     #: Single Bond
     SINGLE = 1
@@ -75,7 +81,10 @@ class BondType(enum.IntEnum):
 
 
 class CoordinateType(enum.IntEnum):
-    """Coordinate Set Type Distinctions."""
+    """Coordinate Set Type Distinctions.
+
+    This is only for pyo3 limitation of not creating `enum.IntEnum.
+    """
 
     #: 2D Coordinates
     TWO_D = 1

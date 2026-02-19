@@ -15,7 +15,7 @@ pub struct PropsUrn {
     /// Numeric data type identifier.
     datatype: u32,
     /// Implementation identifier.
-    implementation: Option<String>,
+    pub implementation: Option<String>,
     /// Property label (e.g. `"Molecular Formula"`, `"SMILES"`).
     pub label: String,
     /// Property sub-name (e.g. `"Canonical"`, `"Isomeric"`).
@@ -87,25 +87,25 @@ impl PropsValue {
 #[cfg_attr(feature = "pyo3", pyo3::pyclass(from_py_object))]
 pub struct CompoundTCount {
     /// Number of chiral atom centers.
-    atom_chiral: u32,
+    pub atom_chiral: u32,
     /// Number of defined chiral atom centers.
-    atom_chiral_def: u32,
+    pub atom_chiral_def: u32,
     /// Number of undefined chiral atom centers.
-    atom_chiral_undef: u32,
+    pub atom_chiral_undef: u32,
     /// Number of chiral bonds.
-    bond_chiral: u32,
+    pub bond_chiral: u32,
     /// Number of defined chiral bonds.
-    bond_chiral_def: u32,
+    pub bond_chiral_def: u32,
     /// Number of undefined chiral bonds.
-    bond_chiral_undef: u32,
+    pub bond_chiral_undef: u32,
     /// Number of covalent units (connected components).
-    covalent_unit: u32,
+    pub covalent_unit: u32,
     /// Number of heavy (non-hydrogen) atoms.
-    heavy_atom: u32,
+    pub heavy_atom: u32,
     /// Number of isotope-labeled atoms.
-    isotope_atom: u32,
+    pub isotope_atom: u32,
     /// Number of tautomers (-1 if unknown).
-    tautomers: i32,
+    pub tautomers: i32,
 }
 
 /// Stereochemistry annotation for a compound.
