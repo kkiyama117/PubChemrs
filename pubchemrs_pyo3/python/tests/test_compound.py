@@ -136,3 +136,68 @@ class TestCompound:
         d = rec.to_dict()
         assert isinstance(d, dict)
         assert "atoms" in d
+
+
+@pytest.mark.network
+class TestCompoundFromCid:
+    """Test the Compound.from_cid() classmethod."""
+
+    def test_from_cid_returns_compound(self):
+        c = Compound.from_cid(2244)
+        assert c.cid == 2244
+
+    def test_from_cid_has_properties(self):
+        c = Compound.from_cid(2244)
+        assert c.molecular_formula is not None
+        assert c.molecular_weight is not None
+
+    def test_from_cid_not_found(self):
+        from pubchemrs import PubChemNotFoundError
+
+        with pytest.raises(PubChemNotFoundError):
+            Compound.from_cid(999999999)
+
+    def test_from_cid_repr(self):
+        c = Compound.from_cid(2244)
+        assert repr(c) == "Compound(2244)"
+
+
+@pytest.mark.network
+class TestCompoundApiProperties:
+    """Test API-fetched properties (synonyms, sids, aids)."""
+
+    @pytest.fixture(scope="class")
+    def aspirin(self):
+        return Compound.from_cid(2244)
+
+    def test_synonyms_returns_list(self, aspirin):
+        syns = aspirin.synonyms
+        assert isinstance(syns, list)
+        assert len(syns) > 0
+
+    def test_synonyms_contains_aspirin(self, aspirin):
+        syns_lower = [s.lower() for s in aspirin.synonyms]
+        assert "aspirin" in syns_lower
+
+    def test_synonyms_cached(self, aspirin):
+        first = aspirin.synonyms
+        second = aspirin.synonyms
+        assert first == second
+
+    def test_sids_returns_list(self, aspirin):
+        sids = aspirin.sids
+        assert isinstance(sids, list)
+        assert len(sids) > 0
+
+    def test_sids_are_integers(self, aspirin):
+        for sid in aspirin.sids[:5]:
+            assert isinstance(sid, int)
+
+    def test_aids_returns_list(self, aspirin):
+        aids = aspirin.aids
+        assert isinstance(aids, list)
+        assert len(aids) > 0
+
+    def test_aids_are_integers(self, aspirin):
+        for aid in aspirin.aids[:5]:
+            assert isinstance(aid, int)

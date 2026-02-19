@@ -25,6 +25,8 @@ __all__ = [
     "get_synonyms_async",
     "get_all_sources",
     "get_all_sources_async",
+    "compound_to_series",
+    "compounds_to_frame",
 ]
 
 __version__ = "0.1.0"
@@ -132,3 +134,37 @@ async def get_all_sources_async(domain=None):
         List of source name strings.
     """
     return await _get_default_client().get_all_sources(domain)
+
+
+def compound_to_series(compound, properties=None):
+    """Convert a Compound to a pandas Series.
+
+    Args:
+        compound: A Compound object.
+        properties: Optional list of property names to include.
+
+    Returns:
+        pandas Series containing compound data.
+    """
+    import pandas as pd
+
+    return pd.Series(compound.to_dict(properties))
+
+
+def compounds_to_frame(compounds, properties=None):
+    """Convert a list of Compounds to a pandas DataFrame.
+
+    Args:
+        compounds: A Compound or list of Compound objects.
+        properties: Optional list of property names to include as columns.
+
+    Returns:
+        pandas DataFrame indexed by CID.
+    """
+    import pandas as pd
+
+    if not isinstance(compounds, list):
+        compounds = [compounds]
+    return pd.DataFrame.from_records(
+        [c.to_dict(properties) for c in compounds], index="cid"
+    )

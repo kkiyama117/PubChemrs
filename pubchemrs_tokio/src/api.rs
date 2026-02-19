@@ -115,6 +115,64 @@ impl PubChemClient {
         }
     }
 
+    /// Fetch related substance IDs for compounds.
+    pub async fn get_sids(
+        &self,
+        identifiers: impl Into<Identifiers>,
+        namespace: CompoundNamespace,
+        kwargs: HashMap<String, String>,
+    ) -> Result<Vec<PubChemInformation>> {
+        let url_builder = UrlBuilder {
+            input_specification: InputSpecification {
+                domain: Domain::Compound(),
+                namespace: Namespace::Compound(namespace),
+                identifiers: identifiers.into(),
+            },
+            operation: Operation::Compound(CompoundOperationSpecification::Sids()),
+            output: OutputFormat::JSON(),
+            kwargs,
+        };
+
+        let response = self.get_and_parse(&url_builder).await?;
+        match response {
+            PubChemResponse::InformationList(info_list) => Ok(info_list.get_information_list()),
+            _other => Err(crate::error::Error::PubChem(
+                pubchemrs_struct::error::PubChemError::ParseResponseError(
+                    "Expected InformationList response, got unexpected variant".into(),
+                ),
+            )),
+        }
+    }
+
+    /// Fetch related assay IDs for compounds.
+    pub async fn get_aids(
+        &self,
+        identifiers: impl Into<Identifiers>,
+        namespace: CompoundNamespace,
+        kwargs: HashMap<String, String>,
+    ) -> Result<Vec<PubChemInformation>> {
+        let url_builder = UrlBuilder {
+            input_specification: InputSpecification {
+                domain: Domain::Compound(),
+                namespace: Namespace::Compound(namespace),
+                identifiers: identifiers.into(),
+            },
+            operation: Operation::Compound(CompoundOperationSpecification::Aids()),
+            output: OutputFormat::JSON(),
+            kwargs,
+        };
+
+        let response = self.get_and_parse(&url_builder).await?;
+        match response {
+            PubChemResponse::InformationList(info_list) => Ok(info_list.get_information_list()),
+            _other => Err(crate::error::Error::PubChem(
+                pubchemrs_struct::error::PubChemError::ParseResponseError(
+                    "Expected InformationList response, got unexpected variant".into(),
+                ),
+            )),
+        }
+    }
+
     /// Fetch all source names for a given domain.
     ///
     /// If `domain` is `None`, defaults to substance sources.
@@ -370,6 +428,42 @@ mod tests {
         assert!(url.contains("compound/smiles"));
         // SMILES may use POST
         let _ = body; // Accept either GET or POST
+    }
+
+    #[test]
+    fn test_get_sids_url() {
+        let builder = UrlBuilder {
+            input_specification: InputSpecification {
+                domain: Domain::Compound(),
+                namespace: Namespace::Compound(CompoundNamespace::Cid()),
+                identifiers: 2244u32.into(),
+            },
+            operation: Operation::Compound(CompoundOperationSpecification::Sids()),
+            output: OutputFormat::JSON(),
+            kwargs: HashMap::new(),
+        };
+
+        let (url, body) = build_url(&builder);
+        assert!(url.contains("compound/cid/2244/sids/JSON"));
+        assert!(body.is_none());
+    }
+
+    #[test]
+    fn test_get_aids_url() {
+        let builder = UrlBuilder {
+            input_specification: InputSpecification {
+                domain: Domain::Compound(),
+                namespace: Namespace::Compound(CompoundNamespace::Cid()),
+                identifiers: 2244u32.into(),
+            },
+            operation: Operation::Compound(CompoundOperationSpecification::Aids()),
+            output: OutputFormat::JSON(),
+            kwargs: HashMap::new(),
+        };
+
+        let (url, body) = build_url(&builder);
+        assert!(url.contains("compound/cid/2244/aids/JSON"));
+        assert!(body.is_none());
     }
 
     #[test]

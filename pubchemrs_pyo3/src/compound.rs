@@ -1,22 +1,45 @@
+use std::collections::HashMap;
 use std::sync::OnceLock;
 
 use num_bigint::BigUint;
 
+use pubchemrs_struct::requests::input::CompoundNamespace;
 use pubchemrs_struct::response::Compound as CompoundResponse;
 use pubchemrs_struct::response::compound::others::PropsValue;
 use pubchemrs_struct::structs::{Atom, Bond};
+use pubchemrs_tokio::client::PubChemClient;
 use pyo3::prelude::*;
-use pyo3::types::{PyDict, PyList, PyString};
+use pyo3::types::{PyDict, PyList, PyString, PyType};
+
+use crate::error::to_pyerr;
+
+// ---------------------------------------------------------------------------
+// Global runtime + client for PyCompound API methods
+// ---------------------------------------------------------------------------
+
+fn global_runtime_and_client() -> &'static (tokio::runtime::Runtime, PubChemClient) {
+    static GLOBAL: OnceLock<(tokio::runtime::Runtime, PubChemClient)> = OnceLock::new();
+    GLOBAL.get_or_init(|| {
+        let runtime = tokio::runtime::Runtime::new().expect("failed to create tokio runtime");
+        let client =
+            PubChemClient::new(Default::default()).expect("failed to create PubChemClient");
+        (runtime, client)
+    })
+}
 
 /// Python-facing Compound wrapper around a raw `Compound` record.
 ///
 /// Provides convenient property getters mirroring the legacy Python Compound class,
-/// with lazy caching for expensive conversions (atoms, bonds).
+/// with lazy caching for expensive conversions (atoms, bonds) and API calls
+/// (synonyms, sids, aids).
 #[pyclass(name = "Compound")]
 pub struct PyCompound {
     record: CompoundResponse,
     atoms_cache: OnceLock<Vec<Atom>>,
     bonds_cache: OnceLock<Vec<Bond>>,
+    synonyms_cache: OnceLock<Vec<String>>,
+    sids_cache: OnceLock<Vec<u32>>,
+    aids_cache: OnceLock<Vec<u32>>,
 }
 
 impl PyCompound {
@@ -25,6 +48,9 @@ impl PyCompound {
             record,
             atoms_cache: OnceLock::new(),
             bonds_cache: OnceLock::new(),
+            synonyms_cache: OnceLock::new(),
+            sids_cache: OnceLock::new(),
+            aids_cache: OnceLock::new(),
         }
     }
 
@@ -40,6 +66,11 @@ impl PyCompound {
                 .flatten()
                 .unwrap_or_default()
         })
+    }
+
+    fn get_cid_or_err(&self) -> PyResult<u32> {
+        self.cid()
+            .ok_or_else(|| pyo3::exceptions::PyValueError::new_err("Compound has no CID"))
     }
 }
 
@@ -117,6 +148,26 @@ impl PyCompound {
         Self::from_record(record)
     }
 
+    /// Fetch a Compound by CID from PubChem.
+    #[classmethod]
+    fn from_cid(_cls: &Bound<'_, PyType>, cid: u32, py: Python<'_>) -> PyResult<Self> {
+        let (rt, client) = global_runtime_and_client();
+        let records = py
+            .detach(|| {
+                rt.block_on(client.get_compounds(cid, CompoundNamespace::Cid(), HashMap::new()))
+            })
+            .map_err(to_pyerr)?;
+        records
+            .into_iter()
+            .next()
+            .map(PyCompound::from_record)
+            .ok_or_else(|| {
+                crate::error::PubChemNotFoundError::new_err(format!(
+                    "No compound found for CID {cid}"
+                ))
+            })
+    }
+
     #[getter]
     fn record(&self) -> CompoundResponse {
         self.record.clone()
@@ -134,6 +185,66 @@ impl PyCompound {
     #[getter]
     fn charge(&self) -> i32 {
         self.record.charge.unwrap_or(0)
+    }
+
+    // -- API-fetched properties (cached) ------------------------------------
+
+    #[getter]
+    fn synonyms(&self, py: Python<'_>) -> PyResult<Vec<String>> {
+        if let Some(cached) = self.synonyms_cache.get() {
+            return Ok(cached.clone());
+        }
+        let cid = self.get_cid_or_err()?;
+        let (rt, client) = global_runtime_and_client();
+        let result = py
+            .detach(|| {
+                rt.block_on(
+                    client.get_synonyms(
+                        cid,
+                        pubchemrs_struct::requests::input::Namespace::Compound(
+                            CompoundNamespace::Cid(),
+                        ),
+                        HashMap::new(),
+                    ),
+                )
+            })
+            .map_err(to_pyerr)?;
+        let syns = result
+            .first()
+            .map(|i| i.synonym.clone())
+            .unwrap_or_default();
+        let _ = self.synonyms_cache.set(syns.clone());
+        Ok(syns)
+    }
+
+    #[getter]
+    fn sids(&self, py: Python<'_>) -> PyResult<Vec<u32>> {
+        if let Some(cached) = self.sids_cache.get() {
+            return Ok(cached.clone());
+        }
+        let cid = self.get_cid_or_err()?;
+        let (rt, client) = global_runtime_and_client();
+        let result = py
+            .detach(|| rt.block_on(client.get_sids(cid, CompoundNamespace::Cid(), HashMap::new())))
+            .map_err(to_pyerr)?;
+        let sids = result.first().map(|i| i.sids.clone()).unwrap_or_default();
+        let _ = self.sids_cache.set(sids.clone());
+        Ok(sids)
+    }
+
+    #[getter]
+    fn aids(&self, py: Python<'_>) -> PyResult<Vec<u32>> {
+        if let Some(cached) = self.aids_cache.get() {
+            return Ok(cached.clone());
+        }
+        let cid = self.get_cid_or_err()?;
+        let (rt, client) = global_runtime_and_client();
+        let result = py
+            .detach(|| rt.block_on(client.get_aids(cid, CompoundNamespace::Cid(), HashMap::new())))
+            .map_err(to_pyerr)?;
+        let aids = result.first().map(|i| i.aids.clone()).unwrap_or_default();
+        let _ = self.aids_cache.set(aids.clone());
+        Ok(aids)
     }
 
     // -- Structural data ----------------------------------------------------

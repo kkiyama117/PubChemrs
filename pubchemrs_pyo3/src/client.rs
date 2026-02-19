@@ -196,6 +196,84 @@ impl PyPubChemClient {
         })
     }
 
+    /// Fetch related substance IDs for compounds (async, returns Python awaitable).
+    #[pyo3(signature = (identifier, namespace="cid", **kwargs))]
+    fn get_sids<'py>(
+        &self,
+        py: Python<'py>,
+        identifier: &Bound<'py, PyAny>,
+        namespace: &str,
+        kwargs: Option<&Bound<'py, PyDict>>,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        let ns = parse_compound_namespace(namespace)?;
+        let ids = extract_identifiers(identifier)?;
+        let kw = extract_kwargs(kwargs)?;
+        let client = self.inner.clone();
+        pyo3_async_runtimes::tokio::future_into_py(py, async move {
+            let result = client.get_sids(ids, ns, kw).await.map_err(to_pyerr)?;
+            Ok(result)
+        })
+    }
+
+    /// Fetch related substance IDs for compounds (synchronous/blocking).
+    #[pyo3(signature = (identifier, namespace="cid", **kwargs))]
+    fn get_sids_sync(
+        &self,
+        py: Python<'_>,
+        identifier: &Bound<'_, PyAny>,
+        namespace: &str,
+        kwargs: Option<&Bound<'_, PyDict>>,
+    ) -> PyResult<Vec<pubchemrs_struct::response::PubChemInformation>> {
+        let ns = parse_compound_namespace(namespace)?;
+        let ids = extract_identifiers(identifier)?;
+        let kw = extract_kwargs(kwargs)?;
+        let client = self.inner.clone();
+        py.detach(|| {
+            self.runtime
+                .block_on(client.get_sids(ids, ns, kw))
+                .map_err(to_pyerr)
+        })
+    }
+
+    /// Fetch related assay IDs for compounds (async, returns Python awaitable).
+    #[pyo3(signature = (identifier, namespace="cid", **kwargs))]
+    fn get_aids<'py>(
+        &self,
+        py: Python<'py>,
+        identifier: &Bound<'py, PyAny>,
+        namespace: &str,
+        kwargs: Option<&Bound<'py, PyDict>>,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        let ns = parse_compound_namespace(namespace)?;
+        let ids = extract_identifiers(identifier)?;
+        let kw = extract_kwargs(kwargs)?;
+        let client = self.inner.clone();
+        pyo3_async_runtimes::tokio::future_into_py(py, async move {
+            let result = client.get_aids(ids, ns, kw).await.map_err(to_pyerr)?;
+            Ok(result)
+        })
+    }
+
+    /// Fetch related assay IDs for compounds (synchronous/blocking).
+    #[pyo3(signature = (identifier, namespace="cid", **kwargs))]
+    fn get_aids_sync(
+        &self,
+        py: Python<'_>,
+        identifier: &Bound<'_, PyAny>,
+        namespace: &str,
+        kwargs: Option<&Bound<'_, PyDict>>,
+    ) -> PyResult<Vec<pubchemrs_struct::response::PubChemInformation>> {
+        let ns = parse_compound_namespace(namespace)?;
+        let ids = extract_identifiers(identifier)?;
+        let kw = extract_kwargs(kwargs)?;
+        let client = self.inner.clone();
+        py.detach(|| {
+            self.runtime
+                .block_on(client.get_aids(ids, ns, kw))
+                .map_err(to_pyerr)
+        })
+    }
+
     /// Fetch all source names for a domain (async, returns Python awaitable).
     #[pyo3(signature = (domain=None))]
     fn get_all_sources<'py>(
