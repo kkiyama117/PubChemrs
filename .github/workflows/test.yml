@@ -38,5 +38,4 @@ jobs:
         working-directory: pubchemrs_pyo3
         run: |
           uv sync --dev
-          uv run --dev maturin develop
           uv run --dev pytest python/tests/ -v
