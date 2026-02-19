@@ -30,7 +30,10 @@ pub type Compounds = Vec<Compound>;
 /// Represents a chemical compound with its properties.
 /// This is a pure Rust struct that mirrors PubChemPy's Compound class.
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass(from_py_object))]
+#[cfg_attr(
+    feature = "pyo3",
+    pyo3::pyclass(name = "CompoundRecord", from_py_object)
+)]
 pub struct Compound {
     /// Structural atoms.
     /// The response of atoms is not useful by used as it is, so we need to convert them when using.
@@ -70,6 +73,14 @@ impl Compound {
         self.props
             .iter()
             .find(|p| p.urn.label == label && p.urn.name.as_deref() == Some(name))
+            .map(|p| &p.value)
+    }
+
+    /// Search props array by implementation identifier, return the first matching value.
+    pub fn parse_prop_by_implementation(&self, implementation: &str) -> Option<&PropsValue> {
+        self.props
+            .iter()
+            .find(|p| p.urn.implementation.as_deref() == Some(implementation))
             .map(|p| &p.value)
     }
 }

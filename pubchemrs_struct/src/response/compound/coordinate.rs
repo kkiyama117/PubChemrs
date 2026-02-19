@@ -16,5 +16,5 @@ pub struct CoordsInner {
     pub data: Option<Vec<CompoundProps>>,
     /// Coordinate type flags (2D, 3D, units, etc.).
     #[serde(rename = "type")]
-    _type: Vec<u32>,
+    pub coord_type: Vec<u32>,
 }
