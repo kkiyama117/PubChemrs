@@ -2,6 +2,7 @@ use pyo3::prelude::*;
 use pyo3::types::PyDict;
 
 mod client;
+mod compound;
 mod error;
 
 /// Native extension module for the pubchemrs Python package.
@@ -17,7 +18,8 @@ fn _pubchemrs(m: &Bound<'_, PyModule>) -> PyResult<()> {
 
     // Re-export key types from pubchemrs_struct
     m.add_class::<pubchemrs_struct::properties::CompoundProperties>()?;
-    m.add_class::<pubchemrs_struct::response::Compound>()?;
+    m.add_class::<pubchemrs_struct::response::Compound>()?; // Python name: "CompoundRecord"
+    m.add_class::<compound::PyCompound>()?; // Python name: "Compound"
     m.add_class::<pubchemrs_struct::response::PubChemInformation>()?;
 
     // Register struct types

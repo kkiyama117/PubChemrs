@@ -3,7 +3,6 @@ use std::collections::HashMap;
 use pubchemrs_struct::properties::CompoundProperties;
 use pubchemrs_struct::requests::input::CompoundNamespace;
 use pubchemrs_struct::requests::operation::CompoundPropertyTag;
-use pubchemrs_struct::response::Compound;
 use pubchemrs_tokio::client::{ClientConfig, PubChemClient};
 use pyo3::prelude::*;
 use pyo3::types::PyDict;
@@ -62,8 +61,12 @@ impl PyPubChemClient {
         let kw = extract_kwargs(kwargs)?;
         let client = self.inner.clone();
         pyo3_async_runtimes::tokio::future_into_py(py, async move {
-            let result = client.get_compounds(ids, ns, kw).await.map_err(to_pyerr)?;
-            Ok(result)
+            let records = client.get_compounds(ids, ns, kw).await.map_err(to_pyerr)?;
+            let compounds: Vec<crate::compound::PyCompound> = records
+                .into_iter()
+                .map(crate::compound::PyCompound::from_record)
+                .collect();
+            Ok(compounds)
         })
     }
 
@@ -75,16 +78,20 @@ impl PyPubChemClient {
         identifier: &Bound<'_, PyAny>,
         namespace: &str,
         kwargs: Option<&Bound<'_, PyDict>>,
-    ) -> PyResult<Vec<Compound>> {
+    ) -> PyResult<Vec<crate::compound::PyCompound>> {
         let ns = parse_compound_namespace(namespace)?;
         let ids = extract_identifiers(identifier)?;
         let kw = extract_kwargs(kwargs)?;
         let client = self.inner.clone();
-        py.detach(|| {
+        let records = py.detach(|| {
             self.runtime
                 .block_on(client.get_compounds(ids, ns, kw))
                 .map_err(to_pyerr)
-        })
+        })?;
+        Ok(records
+            .into_iter()
+            .map(crate::compound::PyCompound::from_record)
+            .collect())
     }
 
     /// Fetch compound properties (async, returns Python awaitable).
