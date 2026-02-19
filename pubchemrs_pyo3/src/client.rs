@@ -105,7 +105,10 @@ impl PyPubChemClient {
     ) -> PyResult<Bound<'py, PyAny>> {
         let ns = parse_compound_namespace(namespace)?;
         let ids = extract_identifiers(identifier)?;
-        let props: Vec<CompoundPropertyTag> = properties;
+        let props: Vec<CompoundPropertyTag> = properties
+            .into_iter()
+            .map(CompoundPropertyTag::from)
+            .collect();
         let kw = extract_kwargs(kwargs)?;
         let client = self.inner.clone();
         pyo3_async_runtimes::tokio::future_into_py(py, async move {
@@ -129,7 +132,10 @@ impl PyPubChemClient {
     ) -> PyResult<Vec<CompoundProperties>> {
         let ns = parse_compound_namespace(namespace)?;
         let ids = extract_identifiers(identifier)?;
-        let props: Vec<CompoundPropertyTag> = properties;
+        let props: Vec<CompoundPropertyTag> = properties
+            .into_iter()
+            .map(CompoundPropertyTag::from)
+            .collect();
         let kw = extract_kwargs(kwargs)?;
         let client = self.inner.clone();
         py.detach(|| {
