@@ -152,13 +152,11 @@ impl PubChemClient {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pubchemrs_struct::requests::url_builder::PUBCHEM_API_BASE;
 
     /// Helper to build URL from a UrlBuilder and verify it.
     fn build_url(builder: &UrlBuilder) -> (String, Option<String>) {
-        let (parts, body) = builder.build_url_parts().unwrap();
-        let url = format!("{}/{}", PUBCHEM_API_BASE, parts.join("/"));
-        (url, body)
+        let built = builder.build_url_parts().unwrap();
+        (built.to_full_url(), built.post_body)
     }
 
     #[test]

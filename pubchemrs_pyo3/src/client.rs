@@ -6,6 +6,7 @@ use pubchemrs_struct::requests::operation::CompoundPropertyTag;
 use pubchemrs_struct::response::Compound;
 use pubchemrs_tokio::client::{ClientConfig, PubChemClient};
 use pyo3::prelude::*;
+use pyo3::types::PyDict;
 
 use crate::error::to_pyerr;
 
@@ -47,39 +48,41 @@ impl PyPubChemClient {
     /// Args:
     ///     identifier: CID (int), name (str), or list of CIDs.
     ///     namespace: Namespace string (default: "cid").
-    #[pyo3(signature = (identifier, namespace="cid"))]
+    ///     **kwargs: Additional query parameters (e.g. record_type="3d").
+    #[pyo3(signature = (identifier, namespace="cid", **kwargs))]
     fn get_compounds<'py>(
         &self,
         py: Python<'py>,
         identifier: &Bound<'py, PyAny>,
         namespace: &str,
+        kwargs: Option<&Bound<'py, PyDict>>,
     ) -> PyResult<Bound<'py, PyAny>> {
         let ns = parse_compound_namespace(namespace)?;
         let ids = extract_identifiers(identifier)?;
+        let kw = extract_kwargs(kwargs)?;
         let client = self.inner.clone();
         pyo3_async_runtimes::tokio::future_into_py(py, async move {
-            let result = client
-                .get_compounds(ids, ns, HashMap::new())
-                .await
-                .map_err(to_pyerr)?;
+            let result = client.get_compounds(ids, ns, kw).await.map_err(to_pyerr)?;
             Ok(result)
         })
     }
 
     /// Fetch full compound records (synchronous/blocking).
-    #[pyo3(signature = (identifier, namespace="cid"))]
+    #[pyo3(signature = (identifier, namespace="cid", **kwargs))]
     fn get_compounds_sync(
         &self,
         py: Python<'_>,
         identifier: &Bound<'_, PyAny>,
         namespace: &str,
+        kwargs: Option<&Bound<'_, PyDict>>,
     ) -> PyResult<Vec<Compound>> {
         let ns = parse_compound_namespace(namespace)?;
         let ids = extract_identifiers(identifier)?;
+        let kw = extract_kwargs(kwargs)?;
         let client = self.inner.clone();
         py.detach(|| {
             self.runtime
-                .block_on(client.get_compounds(ids, ns, HashMap::new()))
+                .block_on(client.get_compounds(ids, ns, kw))
                 .map_err(to_pyerr)
         })
     }
@@ -90,21 +93,27 @@ impl PyPubChemClient {
     ///     identifier: CID (int), name (str), or list of CIDs.
     ///     properties: List of property name strings.
     ///     namespace: Namespace string (default: "cid").
-    #[pyo3(signature = (identifier, properties, namespace="cid"))]
+    ///     **kwargs: Additional query parameters.
+    #[pyo3(signature = (identifier, properties, namespace="cid", **kwargs))]
     fn get_properties<'py>(
         &self,
         py: Python<'py>,
         identifier: &Bound<'py, PyAny>,
         properties: Vec<String>,
         namespace: &str,
+        kwargs: Option<&Bound<'py, PyDict>>,
     ) -> PyResult<Bound<'py, PyAny>> {
         let ns = parse_compound_namespace(namespace)?;
         let ids = extract_identifiers(identifier)?;
-        let props: Vec<CompoundPropertyTag> = properties;
+        let props: Vec<CompoundPropertyTag> = properties
+            .into_iter()
+            .map(CompoundPropertyTag::from)
+            .collect();
+        let kw = extract_kwargs(kwargs)?;
         let client = self.inner.clone();
         pyo3_async_runtimes::tokio::future_into_py(py, async move {
             let result = client
-                .get_properties(ids, ns, &props, HashMap::new())
+                .get_properties(ids, ns, &props, kw)
                 .await
                 .map_err(to_pyerr)?;
             Ok(result)
@@ -112,59 +121,70 @@ impl PyPubChemClient {
     }
 
     /// Fetch compound properties (synchronous/blocking).
-    #[pyo3(signature = (identifier, properties, namespace="cid"))]
+    #[pyo3(signature = (identifier, properties, namespace="cid", **kwargs))]
     fn get_properties_sync(
         &self,
         py: Python<'_>,
         identifier: &Bound<'_, PyAny>,
         properties: Vec<String>,
         namespace: &str,
+        kwargs: Option<&Bound<'_, PyDict>>,
     ) -> PyResult<Vec<CompoundProperties>> {
         let ns = parse_compound_namespace(namespace)?;
         let ids = extract_identifiers(identifier)?;
-        let props: Vec<CompoundPropertyTag> = properties;
+        let props: Vec<CompoundPropertyTag> = properties
+            .into_iter()
+            .map(CompoundPropertyTag::from)
+            .collect();
+        let kw = extract_kwargs(kwargs)?;
         let client = self.inner.clone();
         py.detach(|| {
             self.runtime
-                .block_on(client.get_properties(ids, ns, &props, HashMap::new()))
+                .block_on(client.get_properties(ids, ns, &props, kw))
                 .map_err(to_pyerr)
         })
     }
 
     /// Fetch synonyms for compounds (async, returns Python awaitable).
-    #[pyo3(signature = (identifier, namespace="cid"))]
+    ///
+    /// Args:
+    ///     identifier: CID (int), name (str), or list of CIDs.
+    ///     namespace: Namespace string (default: "cid").
+    ///     **kwargs: Additional query parameters.
+    #[pyo3(signature = (identifier, namespace="cid", **kwargs))]
     fn get_synonyms<'py>(
         &self,
         py: Python<'py>,
         identifier: &Bound<'py, PyAny>,
         namespace: &str,
+        kwargs: Option<&Bound<'py, PyDict>>,
     ) -> PyResult<Bound<'py, PyAny>> {
         let ns = parse_namespace(namespace)?;
         let ids = extract_identifiers(identifier)?;
+        let kw = extract_kwargs(kwargs)?;
         let client = self.inner.clone();
         pyo3_async_runtimes::tokio::future_into_py(py, async move {
-            let result = client
-                .get_synonyms(ids, ns, HashMap::new())
-                .await
-                .map_err(to_pyerr)?;
+            let result = client.get_synonyms(ids, ns, kw).await.map_err(to_pyerr)?;
             Ok(result)
         })
     }
 
     /// Fetch synonyms for compounds (synchronous/blocking).
-    #[pyo3(signature = (identifier, namespace="cid"))]
+    #[pyo3(signature = (identifier, namespace="cid", **kwargs))]
     fn get_synonyms_sync(
         &self,
         py: Python<'_>,
         identifier: &Bound<'_, PyAny>,
         namespace: &str,
+        kwargs: Option<&Bound<'_, PyDict>>,
     ) -> PyResult<Vec<pubchemrs_struct::response::PubChemInformation>> {
         let ns = parse_namespace(namespace)?;
         let ids = extract_identifiers(identifier)?;
+        let kw = extract_kwargs(kwargs)?;
         let client = self.inner.clone();
         py.detach(|| {
             self.runtime
-                .block_on(client.get_synonyms(ids, ns, HashMap::new()))
+                .block_on(client.get_synonyms(ids, ns, kw))
                 .map_err(to_pyerr)
         })
     }
@@ -220,6 +240,19 @@ fn parse_source_domain(domain: Option<&str>) -> Option<pubchemrs_struct::request
             pubchemrs_struct::requests::input::Domain::from_str(other).ok()
         }
     }
+}
+
+fn extract_kwargs(kwargs: Option<&Bound<'_, PyDict>>) -> PyResult<HashMap<String, String>> {
+    let Some(dict) = kwargs else {
+        return Ok(HashMap::new());
+    };
+    let mut map = HashMap::new();
+    for (key, value) in dict.iter() {
+        let k: String = key.extract()?;
+        let v: String = value.str()?.to_string();
+        map.insert(k, v);
+    }
+    Ok(map)
 }
 
 fn extract_identifiers(

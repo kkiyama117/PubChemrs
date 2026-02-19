@@ -11,4 +11,4 @@ pub mod output;
 pub mod url_builder;
 
 pub use common::{DomainCompatible, UrlParts, XRef};
-pub use url_builder::{PUBCHEM_API_BASE, UrlBuilder};
+pub use url_builder::{BuiltUrl, PUBCHEM_API_BASE, UrlBuilder};

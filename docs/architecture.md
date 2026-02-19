@@ -48,7 +48,7 @@ The pipeline consists of these steps:
 2. **`Operation`** (`pubchemrs_struct/src/requests/operation/`)
    - What to fetch: Record, Property, Synonyms, XRefs, Dates, etc.
    - Domain-specific operation enums: `CompoundOperationSpecification` (`compound.rs`), `SubstanceOperationSpecification` (`substance.rs`), `AssayOperationSpecification` (`assay.rs`), and simpler domain operations (`simple.rs`)
-   - `CompoundProperty` holds a list of property tags
+   - `CompoundProperty` holds a list of `CompoundPropertyTag` enum values (42 known variants + `Other(String)` for forward compatibility)
 
 3. **`OutputFormat`** (`pubchemrs_struct/src/requests/output.rs`)
    - JSON, SDF, etc.
